@@ -13,13 +13,112 @@ async function extractTextFromFile(filePath: string): Promise<string> {
       
       case '.pdf':
         try {
-          const pdf = (await import('pdf-parse')).default;
-          const dataBuffer = await fs.readFile(filePath);
-          const pdfData = await pdf(dataBuffer);
-          return pdfData.text || '[PDF Resume - No text content could be extracted]';
+          console.log('Attempting PDF extraction for:', filePath);
+          
+          // First verify file exists and get stats
+          const fileStats = await fs.stat(filePath);
+          console.log('File stats:', { size: fileStats.size, isFile: fileStats.isFile() });
+          
+          // Try pdf2json first (structured data extraction)
+          try {
+            const PDFParser = (await import('pdf2json')).default;
+            
+            console.log('Attempting pdf2json extraction...');
+            const pdfParser = new PDFParser();
+            
+            const pdfData = await new Promise<any>((resolve, reject) => {
+              pdfParser.on('pdfParser_dataError', (errData: any) => {
+                reject(new Error(`PDF parsing error: ${errData.parserError}`));
+              });
+              
+              pdfParser.on('pdfParser_dataReady', (pdfData: any) => {
+                resolve(pdfData);
+              });
+              
+              pdfParser.loadPDF(filePath);
+            });
+            
+            // Extract text from the structured JSON data
+            let fullText = '';
+            if (pdfData && (pdfData as any).Pages) {
+              for (const page of (pdfData as any).Pages) {
+                if (page.Texts) {
+                  for (const textItem of page.Texts) {
+                    if (textItem.R) {
+                      for (const run of textItem.R) {
+                        if (run.T) {
+                          // Decode URI component to get actual text
+                          fullText += decodeURIComponent(run.T) + ' ';
+                        }
+                      }
+                    }
+                  }
+                  fullText += '\n'; // Add line break between pages
+                }
+              }
+            }
+            
+            if (fullText.trim()) {
+              console.log('PDF text extracted successfully with pdf2json:', fullText.length, 'characters');
+              
+              // Clean up the text formatting
+              const cleanedText = fullText
+                .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+                .replace(/([a-z])\s+([a-z])/g, '$1$2') // Remove spaces between lowercase letters
+                .replace(/([A-Z])\s+([a-z])/g, '$1$2') // Remove spaces between uppercase and lowercase
+                .replace(/([a-z])\s+([A-Z])/g, '$1 $2') // Keep space between word boundaries
+                .replace(/\s*●\s*/g, '\n• ') // Format bullet points
+                .replace(/\s*\|\s*/g, ' | ') // Clean up pipe separators
+                .trim();
+              
+              return cleanedText;
+            } else {
+              throw new Error('No text content found with pdf2json');
+            }
+          } catch (pdf2jsonError) {
+            console.warn('pdf2json extraction failed:', pdf2jsonError);
+            
+            // Try pdf-lib as fallback (though it's not ideal for text extraction)
+            try {
+              console.log('Trying pdf-lib as fallback...');
+              const { PDFDocument } = await import('pdf-lib');
+              const pdfBuffer = await fs.readFile(filePath);
+              const pdfDoc = await PDFDocument.load(pdfBuffer);
+              
+              // pdf-lib doesn't have direct text extraction capabilities
+              // This is mainly a placeholder to show the approach
+              console.log('PDF loaded with pdf-lib, but text extraction not supported');
+              throw new Error('pdf-lib does not support text extraction');
+            } catch (pdfLibError) {
+              console.warn('pdf-lib fallback also failed:', pdfLibError);
+            }
+            
+            // Final fallback: Return helpful user message
+            const fileName = filePath.split('/').pop() || 'resume.pdf';
+            const sizeKB = Math.round(fileStats.size / 1024);
+            
+            return `📄 PDF Resume: ${fileName} (${sizeKB} KB)
+
+This PDF resume has been successfully uploaded and linked to your job application.
+
+Text extraction from this PDF encountered technical limitations, but the resume file is properly 
+stored and can be:
+
+• Downloaded and opened directly from your file system
+• Viewed using the resume management features
+• Referenced during interview preparation
+
+File location: ${filePath}
+File size: ${fileStats.size} bytes
+Upload date: ${new Date().toLocaleDateString()}
+
+The resume has been successfully linked to your job application and will be 
+available in the Interview Prep modal for reference.`;
+          }
+          
         } catch (pdfError) {
-          console.warn('PDF extraction failed:', pdfError);
-          return `[PDF Resume - ${filePath}]\n\nFailed to extract text from PDF file.\nThe resume file exists and can be opened directly.\n\nError: ${pdfError instanceof Error ? pdfError.message : 'Unknown PDF parsing error'}`;
+          console.error('PDF file access failed:', pdfError);
+          return `[PDF Resume - File Access Error]\n\nUnable to access the PDF file.\n\nError: ${pdfError instanceof Error ? pdfError.message : 'Unknown file system error'}`;
         }
       
       case '.doc':

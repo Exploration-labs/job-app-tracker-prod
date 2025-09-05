@@ -13,10 +13,59 @@ async function extractTextFromBuffer(buffer: Buffer, filename: string): Promise<
       
       case '.pdf':
         try {
-          const pdf = (await import('pdf-parse')).default;
-          const pdfData = await pdf(buffer);
+          // Use the same PDF extraction logic as the extract-text route
+          // For bulk upload, we'll use a simplified extraction approach
+          const PDFParser = (await import('pdf2json')).default;
+          
+          // Save buffer to temp file for pdf2json
+          const fs = require('fs').promises;
+          const path = require('path');
+          const os = require('os');
+          
+          const tempPath = path.join(os.tmpdir(), `bulk-pdf-${Date.now()}.pdf`);
+          await fs.writeFile(tempPath, buffer);
+          
+          const pdfParser = new PDFParser();
+          
+          const pdfData = await new Promise<any>((resolve, reject) => {
+            pdfParser.on('pdfParser_dataError', (errData: any) => {
+              reject(new Error(`PDF parsing error: ${errData.parserError}`));
+            });
+            
+            pdfParser.on('pdfParser_dataReady', (pdfData: any) => {
+              resolve(pdfData);
+            });
+            
+            pdfParser.loadPDF(tempPath);
+          });
+          
+          // Clean up temp file
+          try {
+            await fs.unlink(tempPath);
+          } catch (cleanupError) {
+            console.warn('Failed to clean up temp PDF file:', tempPath);
+          }
+          
+          // Extract text from the structured JSON data
+          let fullText = '';
+          if (pdfData && (pdfData as any).Pages) {
+            for (const page of (pdfData as any).Pages) {
+              if (page.Texts) {
+                for (const textItem of page.Texts) {
+                  if (textItem.R) {
+                    for (const run of textItem.R) {
+                      if (run.T) {
+                        fullText += decodeURIComponent(run.T) + ' ';
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          
           return { 
-            text: pdfData.text || '[PDF Resume - No text content could be extracted]' 
+            text: fullText.trim() || '[PDF Resume - No text content could be extracted]' 
           };
         } catch (pdfError) {
           console.warn('PDF extraction failed:', pdfError);

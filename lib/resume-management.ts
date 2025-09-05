@@ -81,6 +81,7 @@ export class ResumeManager {
         upload_timestamp: new Date().toISOString(),
         original_path: file.name,
         original_filename: file.name,
+        mime_type: file.type || this.detectMimeTypeFromExtension(ext),
         is_active: true
       };
 
@@ -224,6 +225,17 @@ export class ResumeManager {
   /**
    * Private helper methods
    */
+  private detectMimeTypeFromExtension(ext: string): string {
+    const mimeTypes: { [key: string]: string } = {
+      'pdf': 'application/pdf',
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'doc': 'application/msword',
+      'txt': 'text/plain',
+      'rtf': 'application/rtf'
+    };
+    return mimeTypes[ext.toLowerCase()] || 'application/octet-stream';
+  }
+
   private async calculateFileChecksum(file: File): Promise<string> {
     const buffer = await file.arrayBuffer();
     const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);

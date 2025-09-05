@@ -102,6 +102,7 @@ export interface ResumeVersionEntry {
   upload_timestamp: string;
   original_path: string;
   original_filename: string;
+  mime_type?: string; // MIME type for better file type detection
   is_active: boolean;
   // Text extraction fields
   extracted_text?: string;

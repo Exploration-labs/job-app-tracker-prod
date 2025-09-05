@@ -28,6 +28,7 @@ import {
   Focus
 } from 'lucide-react';
 import { resumeManager } from '@/lib/resume-management';
+import { detectFileKind, getFileKindDisplayInfo } from '@/utils/files';
 
 interface InterviewPrepModeProps {
   isOpen: boolean;
@@ -49,6 +50,7 @@ interface ResumeVersion {
   path: string;
   uploaded_at: string;
   is_active: boolean;
+  mime_type?: string; // Add MIME type for file detection
 }
 
 interface JobResume {
@@ -876,20 +878,70 @@ export function InterviewPrepMode({ isOpen, onClose, job }: InterviewPrepModePro
                                       
                                       {/* Resume content */}
                                       <div className="flex-1 p-4 overflow-auto min-h-0">
-                                        {resumeText ? (
-                                          <div 
-                                            className="text-sm leading-relaxed text-gray-800"
-                                            style={{
-                                              whiteSpace: 'pre-wrap',
-                                              wordWrap: 'break-word',
-                                              maxWidth: '65ch',
-                                              fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-                                              lineHeight: '1.6'
-                                            }}
-                                          >
-                                            {resumeText}
-                                          </div>
-                                        ) : (
+                                        {resumeText ? (() => {
+                                          // Use robust file type detection
+                                          const fileKind = detectFileKind({
+                                            contentType: selectedResume?.mime_type,
+                                            extension: selectedResume?.filename?.split('.').pop() || '',
+                                          });
+                                          const displayInfo = getFileKindDisplayInfo(fileKind);
+                                          
+                                          if (fileKind === 'pdf') {
+                                            // For PDF files: Show "Open PDF File" interface only
+                                            return (
+                                              <div className="text-center py-8">
+                                                <FileText className="h-16 w-16 mx-auto mb-4 text-red-400" />
+                                                <h3 className="text-lg font-medium mb-2">📄 PDF Resume</h3>
+                                                <p className="text-sm text-gray-600 mb-4">PDF files are best viewed in their original format.</p>
+                                                <div className="space-y-2">
+                                                  <Button
+                                                    onClick={handleOpenResume}
+                                                    className="mx-auto"
+                                                    size="sm"
+                                                  >
+                                                    <ExternalLink className="h-4 w-4 mr-2" />
+                                                    Open PDF File
+                                                  </Button>
+                                                  {selectedResume && (
+                                                    <div className="mt-2">
+                                                      <Button
+                                                        onClick={() => {
+                                                          if (selectedResume.path) {
+                                                            window.open(`/api/resume/download?path=${encodeURIComponent(selectedResume.path)}`, '_blank');
+                                                          }
+                                                        }}
+                                                        variant="outline"
+                                                        size="sm"
+                                                      >
+                                                        <FileDown className="h-4 w-4 mr-2" />
+                                                        Download PDF
+                                                      </Button>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-3">
+                                                  Click to open the full PDF resume for best viewing experience
+                                                </p>
+                                              </div>
+                                            );
+                                          } else {
+                                            // For DOCX and other file types: Show extracted text
+                                            return (
+                                              <div 
+                                                className="text-sm leading-relaxed text-gray-800"
+                                                style={{
+                                                  whiteSpace: 'pre-wrap',
+                                                  wordWrap: 'break-word',
+                                                  maxWidth: '65ch',
+                                                  fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                                                  lineHeight: '1.6'
+                                                }}
+                                              >
+                                              {resumeText}
+                                            </div>
+                                            );
+                                          }
+                                        })() : (
                                           <div className="text-center text-gray-500 py-8">
                                             <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
                                             <p className="text-sm font-medium">No resume text yet. Paste it to view here.</p>
