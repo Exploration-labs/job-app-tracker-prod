@@ -22,6 +22,16 @@ const ROLES = [
 
 const STATUSES = ['Applied', 'Phone Screen', 'Interview', 'Final Round', 'Offer', 'Rejected'] as const;
 
+// Stage mapping for consistent type handling
+const STAGE_BY_STATUS: Record<typeof STATUSES[number], 'Application' | 'Active' | 'Closed'> = {
+  'Applied': 'Application',
+  'Phone Screen': 'Active', 
+  'Interview': 'Active',
+  'Final Round': 'Active',
+  'Offer': 'Active',
+  'Rejected': 'Closed'
+};
+
 const LOCATIONS = [
   'San Francisco, CA', 'New York, NY', 'Austin, TX', 'Seattle, WA',
   'Boston, MA', 'Chicago, IL', 'Remote', 'Los Angeles, CA'
@@ -368,7 +378,7 @@ export function generateDemoApplications(count = 8, seed = config.demo.seed): De
       notes: `${pick(DEMO_NOTES)} (Demo application - realistic interview scenario)`,
       jdLink: `https://careers.${scenario.company.toLowerCase()}.com/${scenario.role.toLowerCase().replace(/\s+/g, '-')}`,
       resumeUsed: `${scenario.role.replace(/\s+/g, '_')}_Resume_${scenario.company}.pdf`,
-      stage: scenario.status === 'Applied' ? 'Application' : scenario.status === 'Rejected' ? 'Closed' : 'Active',
+      stage: STAGE_BY_STATUS[scenario.status],
       priority: scenario.priority,
       // Enhanced fields
       jobDescription: JOB_DESCRIPTIONS[scenario.role as keyof typeof JOB_DESCRIPTIONS],
@@ -401,7 +411,7 @@ export function generateDemoApplications(count = 8, seed = config.demo.seed): De
       notes: `${pick(DEMO_NOTES)} (Demo application - not persistent)`,
       jdLink: `https://demo-jobs.example.com/${company.toLowerCase().replace(/\s+/g, '-')}/${role.toLowerCase().replace(/\s+/g, '-')}`,
       resumeUsed: rng() > 0.5 ? `${role.replace(/\s+/g, '_')}_Resume_${company}.pdf` : undefined,
-      stage: status === 'Applied' ? 'Application' : status === 'Rejected' ? 'Closed' : 'Active',
+      stage: STAGE_BY_STATUS[status],
       priority: pick(['high', 'medium', 'low'] as const),
       // Basic enhanced fields for random applications
       jobDescription: JOB_DESCRIPTIONS[role as keyof typeof JOB_DESCRIPTIONS],
