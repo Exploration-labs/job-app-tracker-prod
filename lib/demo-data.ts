@@ -285,7 +285,7 @@ export function generateDemoApplications(count = 8, seed = config.demo.seed): De
   const rng = seedrandom(seed);
   
   // Helper to pick random item from array
-  const pick = <T>(arr: T[]): T => arr[Math.floor(rng() * arr.length)];
+  const pick = <T>(arr: readonly T[]): T => arr[Math.floor(rng() * arr.length)];
   
   // Helper to generate realistic dates in the past
   const generateDate = (daysAgo: number) => {
@@ -441,7 +441,7 @@ export interface DemoResumeData {
 
 export function generateDemoResumes(count = 5, seed = config.demo.seed): DemoResumeData[] {
   const rng = seedrandom(seed);
-  const pick = <T>(arr: T[]): T => arr[Math.floor(rng() * arr.length)];
+  const pick = <T>(arr: readonly T[]): T => arr[Math.floor(rng() * arr.length)];
   
   return Array.from({ length: count }, (_, index) => {
     const company = pick(COMPANIES);
