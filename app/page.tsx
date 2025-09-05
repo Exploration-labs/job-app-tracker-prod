@@ -8,6 +8,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { FileText, Settings, Upload, RotateCcw, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import DemoBanner from '@/components/demo-banner';
+import UseDemoData from '@/components/use-demo-data';
 
 export default function Home() {
   const [showJobSaver, setShowJobSaver] = useState(false);
@@ -15,6 +17,9 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-4 space-y-6">
+        {/* Demo Banner */}
+        <DemoBanner />
+        
         {/* Header */}
         <div className="text-center space-y-4 py-6">
           <h1 className="text-3xl font-bold text-gray-900">Job Application Tracker</h1>
@@ -23,6 +28,9 @@ export default function Home() {
           </p>
         </div>
 
+        {/* Demo Data Section */}
+        <UseDemoData />
+        
         {/* Main Active Board */}
         <ActiveBoard className="mb-6" />
 
