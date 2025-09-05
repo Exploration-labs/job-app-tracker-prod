@@ -62,6 +62,7 @@ export interface JobDescriptionPreview {
   company: string | null;
   role: string | null;
   preview: string;
+  source_url?: string | null;
 }
 
 export interface DuplicateMatch {

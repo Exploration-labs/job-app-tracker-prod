@@ -5,7 +5,7 @@ export function parseJobDescription(text: string): JobDescriptionPreview {
   const role = extractRole(text);
   const preview = text.substring(0, 300);
   
-  return { company, role, preview };
+  return { company, role, preview, source_url: null };
 }
 
 function extractCompany(text: string): string | null {
