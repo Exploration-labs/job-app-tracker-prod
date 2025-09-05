@@ -1027,7 +1027,7 @@ Netflix perks:
       <CardContent>
         <div className="space-y-4">
           {/* Headers */}
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 pb-2 border-b font-medium text-sm text-gray-600">
+          <div className="grid grid-cols-1 md:grid-cols-[minmax(150px,1fr)_minmax(180px,1.2fr)_100px_120px_140px_minmax(200px,1fr)] gap-4 pb-2 border-b font-medium text-sm text-gray-600">
             <Button 
               variant="ghost" 
               className="justify-start p-0 h-auto font-medium hover:bg-transparent"
@@ -1091,9 +1091,9 @@ Netflix perks:
                       : 'hover:bg-gray-50'
                 }`}>
                   {/* Main Row (always visible for rejected items in collapsed mode) */}
-                  <div className={`grid grid-cols-1 md:grid-cols-6 gap-4 py-3 ${isRejected && !isExpanded ? 'md:grid-cols-4' : ''}`}>
+                  <div className={`grid grid-cols-1 md:grid-cols-[minmax(150px,1fr)_minmax(180px,1.2fr)_100px_120px_140px_minmax(200px,1fr)] gap-4 py-3 ${isRejected && !isExpanded ? 'md:grid-cols-[minmax(150px,1fr)_minmax(180px,1.2fr)_100px_minmax(200px,1fr)]' : ''}`}>
                     {/* Company - Always Visible */}
-                    <div className="font-medium truncate flex items-center gap-2" title={job.company || 'Unknown'}>
+                    <div className="font-medium flex items-center gap-2 min-w-0" title={job.company || 'Unknown'}>
                       {editingField?.jobId === job.uuid && editingField?.field === 'company' ? (
                         <div className="flex items-center gap-1 w-full">
                           <Input
@@ -1216,7 +1216,7 @@ Netflix perks:
                     
                     {/* For rejected items in collapsed mode, show actions directly */}
                     {isRejected && !isExpanded ? (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -1256,7 +1256,7 @@ Netflix perks:
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(job.application_status)}`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium truncate max-w-[100px] ${getStatusColor(job.application_status)}`}>
                           {job.application_status || 'interested'}
                         </span>
                       </div>
@@ -1313,7 +1313,7 @@ Netflix perks:
                         </div>
                         
                         {/* Actions/Status */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -1366,7 +1366,7 @@ Netflix perks:
                               </Button>
                             </>
                           )}
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(job.application_status)}`}>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium truncate max-w-[100px] ${getStatusColor(job.application_status)}`}>
                             {job.application_status || 'interested'}
                           </span>
                         </div>
@@ -1492,7 +1492,7 @@ Netflix perks:
 
       {/* Clear All Confirmation Dialog */}
       <Dialog open={clearAllDialogOpen} onOpenChange={setClearAllDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg max-w-[95vw]">
           <DialogHeader>
             <DialogTitle>Clear All Applications</DialogTitle>
             <DialogDescription>
@@ -1500,17 +1500,18 @@ Netflix perks:
               Would you like to export your data as CSV first?
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-2 sm:justify-end">
             <Button
               variant="outline"
               onClick={() => setClearAllDialogOpen(false)}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
             <Button
               variant="secondary"
               onClick={() => handleClearAllConfirmed(true)}
-              className="mr-2"
+              className="w-full sm:w-auto"
             >
               <Download className="h-4 w-4 mr-2" />
               Export CSV & Clear
@@ -1518,6 +1519,7 @@ Netflix perks:
             <Button
               variant="destructive"
               onClick={() => handleClearAllConfirmed(false)}
+              className="w-full sm:w-auto"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Clear All Now
