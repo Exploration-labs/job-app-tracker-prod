@@ -59,6 +59,38 @@ export async function POST(request: NextRequest) {
         user_action: `Uploaded resume for ${company} - ${role}`
       }, true);
 
+      // Update the job record with resume linkage information
+      try {
+        const jobDescriptionsPath = join(process.cwd(), 'job-descriptions');
+        const files = await import('fs/promises').then(fs => fs.readdir(jobDescriptionsPath));
+        
+        for (const file of files) {
+          if (file.endsWith('.json')) {
+            try {
+              const filePath = join(jobDescriptionsPath, file);
+              const jobData = JSON.parse(await import('fs/promises').then(fs => fs.readFile(filePath, 'utf-8')));
+              
+              if (jobData.uuid === jobUuid) {
+                // Update job record with resume information
+                jobData.resume_id = manifestEntry.id;
+                jobData.resume_filename = manifestEntry.base_filename;
+                jobData.resume_path = activeVersion?.managed_path || '';
+                jobData.last_updated = new Date().toISOString();
+                
+                // Save updated job record
+                await import('fs/promises').then(fs => fs.writeFile(filePath, JSON.stringify(jobData, null, 2)));
+                break;
+              }
+            } catch (error) {
+              console.warn(`Failed to read job file ${file}:`, error);
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to update job record with resume info:', error);
+        // Don't fail the upload if job record update fails
+      }
+
       return NextResponse.json({
         success: true,
         resume: manifestEntry

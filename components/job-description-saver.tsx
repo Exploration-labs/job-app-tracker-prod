@@ -14,6 +14,7 @@ import { JobStorageDialog, JobStorageOptions } from '@/components/job-storage-di
 import { ExternalLink, AlertTriangle, GitMerge, HardDrive, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { DemoNotice } from '@/components/demo/demo-notice';
+import { ResumeViewer } from '@/components/resume/resume-viewer';
 
 interface JobDescriptionSaverProps {
   onJobSaved?: () => void;
@@ -22,6 +23,7 @@ interface JobDescriptionSaverProps {
 export function JobDescriptionSaver({ onJobSaved }: JobDescriptionSaverProps) {
   const [text, setText] = useState('');
   const [url, setUrl] = useState('');
+  const [pasteUrl, setPasteUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [preview, setPreview] = useState<JobDescriptionPreview | null>(null);
   const [editableCompany, setEditableCompany] = useState('');
@@ -48,6 +50,10 @@ export function JobDescriptionSaver({ onJobSaved }: JobDescriptionSaverProps) {
     }
 
     const parsed = parseJobDescription(text);
+    // Include the manually entered URL if provided
+    if (pasteUrl.trim()) {
+      parsed.source_url = pasteUrl.trim();
+    }
     setPreview(parsed);
     setEditableCompany(parsed.company || '');
     setEditableRole(parsed.role || '');
@@ -240,8 +246,38 @@ export function JobDescriptionSaver({ onJobSaved }: JobDescriptionSaverProps) {
     }
   };
 
-  const handleResumeUploadComplete = (resume: ResumeManifestEntry) => {
+  const handleResumeUploadComplete = async (resume: ResumeManifestEntry) => {
+    // Add to uploaded resumes immediately
     setUploadedResumes(prev => [...prev, resume]);
+    
+    // Wait a moment for extraction to complete, then refetch both resume and job data
+    setTimeout(async () => {
+      try {
+        // Refetch resume data
+        const resumeResponse = await fetch(`/api/resume/manifest?resumeId=${resume.id}`);
+        if (resumeResponse.ok) {
+          const updatedResume = await resumeResponse.json();
+          // Update the resume in state with the latest extraction data
+          setUploadedResumes(prev => 
+            prev.map(r => r.id === resume.id ? updatedResume : r)
+          );
+        }
+        
+        // Refetch job data to get updated resume linkage and extracted text
+        if (savedJobForTracking?.uuid) {
+          const jobResponse = await fetch(`/api/jobs/${savedJobForTracking.uuid}`);
+          if (jobResponse.ok) {
+            const updatedJobData = await jobResponse.json();
+            // Trigger a refresh of the parent component to update ActiveBoard
+            console.log('Job data updated with resume information:', updatedJobData);
+            onJobSaved?.(); // This will refresh ActiveBoard with updated job data
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to refetch data after extraction:', error);
+      }
+    }, 3000); // Give extraction more time to complete and update job records
+    
     toast({
       title: "Resume Upload Complete!",
       description: `Resume linked to job: ${resume.filename_components.company} - ${resume.filename_components.role}`,
@@ -351,6 +387,17 @@ export function JobDescriptionSaver({ onJobSaved }: JobDescriptionSaverProps) {
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   className="min-h-[200px]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Job URL <span className="text-sm font-normal text-gray-500">(Optional)</span>
+                </label>
+                <Input
+                  placeholder="https://company.com/job-posting"
+                  value={pasteUrl}
+                  onChange={(e) => setPasteUrl(e.target.value)}
+                  type="url"
                 />
               </div>
               <Button onClick={handleAnalyzeText} disabled={isLoading}>
@@ -562,6 +609,13 @@ export function JobDescriptionSaver({ onJobSaved }: JobDescriptionSaverProps) {
                 </p>
               )}
               <DemoNotice message="Demo: Links to resumes reset periodically — in the full app, they're permanent." />
+              
+              {/* Single ResumeViewer for side-by-side display */}
+              {uploadedResumes.length > 0 && (
+                <div className="mt-4">
+                  <ResumeViewer resume={uploadedResumes[0]} />
+                </div>
+              )}
             </CardContent>
           </Card>
 

@@ -19,11 +19,75 @@ interface ResumeUploadProps {
 export function ResumeUpload({ jobUuid, company, role, onUploadComplete }: ResumeUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isExtracting, setIsExtracting] = useState(false);
   const [config, setConfig] = useState<ResumeConfig | null>(null);
   const [keepOriginal, setKeepOriginal] = useState(true);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const extractTextFromResume = async (resume: ResumeManifestEntry, activeVersion: any) => {
+    if (!activeVersion?.managed_path) return;
+
+    setIsExtracting(true);
+    try {
+      const response = await fetch('/api/resume/extract-text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filePath: activeVersion.managed_path })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Update the resume manifest with extracted text
+        const updateResponse = await fetch('/api/resume/update-extraction', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resumeId: resume.id,
+            versionId: activeVersion.version_id,
+            extractedText: data.text,
+            extractionStatus: 'success',
+            extractionMethod: getExtractionMethod(data.fileType)
+          })
+        });
+        
+        if (updateResponse.ok) {
+          // Extraction completed successfully
+          console.log('Text extraction completed for resume:', resume.id);
+        }
+      } else {
+        console.warn('Text extraction failed:', await response.text());
+        // Mark extraction as failed
+        await fetch('/api/resume/update-extraction', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resumeId: resume.id,
+            versionId: activeVersion.version_id,
+            extractedText: '',
+            extractionStatus: 'failed',
+            extractionError: 'Failed to extract text from file'
+          })
+        });
+      }
+    } catch (error) {
+      console.error('Error extracting text:', error);
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
+  const getExtractionMethod = (fileType: string) => {
+    switch (fileType?.toLowerCase()) {
+      case '.pdf': return 'pdf-parse';
+      case '.docx':
+      case '.doc': return 'mammoth';
+      case '.rtf': return 'rtf';
+      case '.txt': return 'plain-text';
+      default: return 'unknown';
+    }
+  };
 
   useEffect(() => {
     loadConfig();
@@ -104,9 +168,12 @@ export function ResumeUpload({ jobUuid, company, role, onUploadComplete }: Resum
       const versionLabel = versionSuffix ? ` (${versionSuffix})` : '';
       const isNewVersion = result.resume.versions?.length > 1;
       
+      // Auto-extract text from uploaded resume
+      await extractTextFromResume(result.resume, activeVersion);
+      
       toast({
         title: isNewVersion ? "New Resume Version Created!" : "Resume Uploaded Successfully!",
-        description: `Resume${versionLabel} saved to managed folder: ${result.resume.base_filename}${versionSuffix}${activeVersion?.managed_path?.split('.').pop() ? '.' + activeVersion.managed_path.split('.').pop() : ''}`,
+        description: `Resume${versionLabel} saved and text extracted for easy viewing.`,
       });
 
       onUploadComplete?.(result.resume);
@@ -234,13 +301,14 @@ export function ResumeUpload({ jobUuid, company, role, onUploadComplete }: Resum
         </div>
 
         {/* Progress Bar */}
-        {isUploading && (
+        {(isUploading || isExtracting) && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span>Uploading...</span>
-              <span>{uploadProgress}%</span>
+              {isUploading && <span>Uploading...</span>}
+              {isExtracting && <span>Extracting text...</span>}
+              {isUploading && <span>{uploadProgress}%</span>}
             </div>
-            <Progress value={uploadProgress} className="w-full" />
+            <Progress value={isExtracting ? 50 : uploadProgress} className="w-full" />
           </div>
         )}
 

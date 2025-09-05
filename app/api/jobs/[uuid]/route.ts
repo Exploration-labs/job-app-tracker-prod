@@ -3,6 +3,61 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 import { JobDescription } from '@/lib/types';
 
+export async function GET(
+  request: Request,
+  { params }: { params: { uuid: string } }
+) {
+  try {
+    const { uuid } = params;
+    
+    if (!uuid) {
+      return NextResponse.json(
+        { error: 'UUID is required' },
+        { status: 400 }
+      );
+    }
+
+    const jobDescriptionsPath = join(process.cwd(), 'job-descriptions');
+    
+    try {
+      const files = await fs.readdir(jobDescriptionsPath);
+      
+      for (const file of files) {
+        if (file.endsWith('.json')) {
+          try {
+            const filePath = join(jobDescriptionsPath, file);
+            const jobData: JobDescription = JSON.parse(await fs.readFile(filePath, 'utf-8'));
+            
+            if (jobData.uuid === uuid) {
+              return NextResponse.json(jobData);
+            }
+          } catch (error) {
+            console.warn(`Failed to read job file ${file}:`, error);
+          }
+        }
+      }
+      
+      return NextResponse.json(
+        { error: 'Job not found' },
+        { status: 404 }
+      );
+      
+    } catch (error) {
+      console.error('Error reading job files:', error);
+      return NextResponse.json(
+        { error: 'Failed to read job files' },
+        { status: 500 }
+      );
+    }
+  } catch (error) {
+    console.error('Error in GET /api/jobs/[uuid]:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
   request: Request,
   { params }: { params: { uuid: string } }

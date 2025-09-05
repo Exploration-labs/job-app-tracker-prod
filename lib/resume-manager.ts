@@ -12,7 +12,7 @@ const CONFIG_FILE = join(process.cwd(), 'resume-config.json');
 const DEFAULT_CONFIG: ResumeConfig = {
   managed_folder_path: DEFAULT_MANAGED_FOLDER,
   keep_original_default: true,
-  supported_file_types: ['.pdf', '.doc', '.docx', '.rtf'],
+  supported_file_types: ['.pdf', '.doc', '.docx', '.rtf', '.txt'],
   naming_format: 'Company_Role_Date'
 };
 
@@ -195,6 +195,12 @@ export class ResumeManagerService {
   async getAllResumes(): Promise<ResumeManifestEntry[]> {
     await this.loadManifest();
     return [...this.manifest];
+  }
+
+  async getResumeById(resumeId: string): Promise<ResumeManifestEntry | null> {
+    await this.loadManifest();
+    const resume = this.manifest.find(entry => entry.id === resumeId);
+    return resume || null;
   }
 
   async deleteResume(resumeId: string): Promise<void> {

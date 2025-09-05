@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
-import { basename } from 'path';
 import { lookup } from 'mime-types';
 
 export async function GET(request: NextRequest) {
@@ -35,22 +34,21 @@ export async function GET(request: NextRequest) {
 
     // Read file
     const fileBuffer = await fs.readFile(filePath);
-    const fileName = basename(filePath);
     const mimeType = lookup(filePath) || 'application/octet-stream';
     
-    // Return file for download
+    // Return file for inline viewing
     return new NextResponse(fileBuffer as unknown as BodyInit, {
       headers: {
         'Content-Type': mimeType,
-        'Content-Disposition': `attachment; filename="${fileName}"`,
+        'Content-Disposition': 'inline',
       },
     });
 
   } catch (error) {
-    console.error('File download error:', error);
+    console.error('File view error:', error);
     return NextResponse.json(
       { 
-        error: error instanceof Error ? error.message : 'Failed to download file'
+        error: error instanceof Error ? error.message : 'Failed to view file'
       },
       { status: 500 }
     );

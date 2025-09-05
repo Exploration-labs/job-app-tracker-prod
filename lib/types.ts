@@ -102,6 +102,11 @@ export interface ResumeVersionEntry {
   original_path: string;
   original_filename: string;
   is_active: boolean;
+  // Text extraction fields
+  extracted_text?: string;
+  extraction_status?: 'pending' | 'success' | 'failed';
+  extraction_error?: string;
+  extraction_method?: 'pdf-parse' | 'mammoth' | 'rtf' | 'plain-text';
 }
 
 export interface ResumeManifestEntry {
@@ -118,6 +123,9 @@ export interface ResumeManifestEntry {
   versions: ResumeVersionEntry[];
   created_at: string;
   last_updated: string;
+  // Convenience field for latest version's extracted text
+  latest_extracted_text?: string;
+  latest_extraction_status?: 'pending' | 'success' | 'failed';
 }
 
 export interface ResumeConfig {

@@ -7,17 +7,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Toaster } from '@/components/ui/toaster';
 import { FileText, Settings, Upload, RotateCcw, Plus } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import DemoBanner from '@/components/demo-banner';
 import UseDemoData from '@/components/use-demo-data';
 
 export default function Home() {
   const [showJobSaver, setShowJobSaver] = useState(false);
   const [activeBoardRefreshTrigger, setActiveBoardRefreshTrigger] = useState(0);
+  const jobSaverRef = useRef<HTMLDivElement>(null);
 
   const handleJobSaved = () => {
     // Trigger ActiveBoard refresh when a job is saved via JobDescriptionSaver
     setActiveBoardRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleAddJobClick = () => {
+    const newState = !showJobSaver;
+    setShowJobSaver(newState);
+    
+    // If opening the job saver, scroll to it after a brief delay to allow rendering
+    if (newState) {
+      setTimeout(() => {
+        jobSaverRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 100);
+    }
   };
 
   return (
@@ -43,7 +59,7 @@ export default function Home() {
         {/* Quick Actions - Compact Row */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
           <Button 
-            onClick={() => setShowJobSaver(!showJobSaver)}
+            onClick={handleAddJobClick}
             className="bg-green-600 hover:bg-green-700 text-white"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -77,7 +93,7 @@ export default function Home() {
 
         {/* Collapsible Job Description Saver */}
         {showJobSaver && (
-          <div className="animate-in slide-in-from-top-2 duration-300">
+          <div ref={jobSaverRef} className="animate-in slide-in-from-top-2 duration-300">
             <JobDescriptionSaver onJobSaved={handleJobSaved} />
           </div>
         )}
