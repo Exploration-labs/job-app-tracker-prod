@@ -11,12 +11,15 @@ import { parseJobDescription } from '@/lib/job-parser';
 import { RecentCaptures } from '@/components/recent-captures';
 import { ResumeUpload } from '@/components/resume-upload';
 import { JobStorageDialog, JobStorageOptions } from '@/components/job-storage-dialog';
-import { ExternalLink, AlertTriangle, GitMerge, HardDrive } from 'lucide-react';
+import { ExternalLink, AlertTriangle, GitMerge, HardDrive, Plus } from 'lucide-react';
 import Link from 'next/link';
+import { DemoNotice } from '@/components/demo/demo-notice';
 
-interface JobDescriptionSaverProps {}
+interface JobDescriptionSaverProps {
+  onJobSaved?: () => void;
+}
 
-export function JobDescriptionSaver({}: JobDescriptionSaverProps) {
+export function JobDescriptionSaver({ onJobSaved }: JobDescriptionSaverProps) {
   const [text, setText] = useState('');
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +33,8 @@ export function JobDescriptionSaver({}: JobDescriptionSaverProps) {
   const [uploadedResumes, setUploadedResumes] = useState<ResumeManifestEntry[]>([]);
   const [showStorageDialog, setShowStorageDialog] = useState(false);
   const [jobToSave, setJobToSave] = useState<JobDescription | null>(null);
+  const [showApplicationTracker, setShowApplicationTracker] = useState(false);
+  const [savedJobForTracking, setSavedJobForTracking] = useState<JobDescription | null>(null);
   const { toast } = useToast();
 
   const handleAnalyzeText = () => {
@@ -125,7 +130,7 @@ export function JobDescriptionSaver({}: JobDescriptionSaverProps) {
       }
     }
 
-    // Create job object for storage dialog
+    // Create job object for storage dialog - starts in 'saved' status
     const jobToSave: JobDescription = {
       uuid: '', // Will be set by API
       company: editableCompany.trim() || null,
@@ -136,6 +141,8 @@ export function JobDescriptionSaver({}: JobDescriptionSaverProps) {
       content_hash: '',
       capture_method: url ? 'url_fetch' : 'manual',
       captured_at: new Date().toISOString(),
+      application_status: 'saved', // JobApplication lifecycle starts here
+      last_updated: new Date().toISOString(),
     };
 
     if (shouldShowStorageDialog) {
@@ -178,6 +185,20 @@ export function JobDescriptionSaver({}: JobDescriptionSaverProps) {
       // Set saved job UUID for resume upload
       setSavedJobUuid(data.uuid);
       
+      // Store the saved job data for potential application tracking
+      const savedJobData: JobDescription = {
+        uuid: data.uuid,
+        company: job.company,
+        role: job.role,
+        jd_text: job.jd_text,
+        source_url: job.source_url,
+        fetched_at_iso: job.fetched_at_iso,
+        content_hash: data.content_hash || '',
+        capture_method: job.capture_method,
+        captured_at: job.captured_at,
+      };
+      setSavedJobForTracking(savedJobData);
+      
       if (data.hasDuplicates && data.duplicateGroups.length > 0) {
         setDuplicateGroups(data.duplicateGroups);
         toast({
@@ -205,6 +226,9 @@ export function JobDescriptionSaver({}: JobDescriptionSaverProps) {
       
       // Trigger refresh of recent captures
       setRefreshKey(prev => prev + 1);
+      
+      // Notify parent component that a job was saved (for Active Board refresh)
+      onJobSaved?.();
     } catch (error) {
       toast({
         title: "Error",
@@ -224,11 +248,53 @@ export function JobDescriptionSaver({}: JobDescriptionSaverProps) {
     });
   };
 
+  const handleMarkAsApplied = async () => {
+    if (!savedJobForTracking) return;
+
+    try {
+      // Progress the JobApplication from 'saved' to 'applied'
+      const updates = {
+        application_status: 'applied' as JobDescription['application_status'],
+        applied_date: new Date().toISOString().split('T')[0],
+        last_updated: new Date().toISOString(),
+      };
+
+      // Update the job record
+      const response = await fetch(`/api/jobs/${savedJobForTracking.uuid}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Marked as Applied!",
+          description: `${savedJobForTracking.company} - ${savedJobForTracking.role} is now marked as applied. This job now appears in your Active Applications board.`,
+        });
+        
+        // Trigger Active Board refresh
+        onJobSaved?.();
+        
+        // Reset the form
+        resetForm();
+      } else {
+        throw new Error('Failed to mark as applied');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to mark job as applied. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const resetForm = () => {
     setSavedJobUuid(null);
     setEditableCompany('');
     setEditableRole('');
     setUploadedResumes([]);
+    setSavedJobForTracking(null);
   };
 
   return (
@@ -444,14 +510,38 @@ export function JobDescriptionSaver({}: JobDescriptionSaverProps) {
             onUploadComplete={handleResumeUploadComplete}
           />
           
-          {/* Show uploaded resumes */}
-          {uploadedResumes.length > 0 && (
-            <Card>
+          {/* Card 1: Next Step for THIS Job */}
+          {savedJobForTracking && (
+            <Card className="border-blue-200 bg-blue-50">
               <CardHeader>
-                <CardTitle>Uploaded Resumes</CardTitle>
-                <CardDescription>Resumes uploaded for this job</CardDescription>
+                <CardTitle className="flex items-center gap-2 text-blue-800">
+                  <Plus className="h-5 w-5" />
+                  Next Step for {savedJobForTracking.company} - {savedJobForTracking.role}
+                </CardTitle>
+                <CardDescription className="text-blue-700">
+                  Track this job as an application to start monitoring progress.
+                </CardDescription>
               </CardHeader>
               <CardContent>
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-600">This will move the job to "Applied" status in your Active Applications board where you can track progress, set interview reminders, and manage your job search pipeline.</p>
+                  <Button onClick={handleMarkAsApplied} className="w-full">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Mark as Applied
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* Card 2: Resumes Linked to THIS Job */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Resumes Linked to This Job</CardTitle>
+              <CardDescription>Resume files associated with this specific job</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {uploadedResumes.length > 0 ? (
                 <div className="space-y-2">
                   {uploadedResumes.map((resume) => (
                     <div key={resume.id} className="flex items-center justify-between p-2 border rounded">
@@ -460,24 +550,37 @@ export function JobDescriptionSaver({}: JobDescriptionSaverProps) {
                           {resume.base_filename}{resume.file_extension}
                         </p>
                         <p className="text-sm text-gray-500">
-                          Versions: {resume.versions.length} • 
-                          Last Updated: {new Date(resume.last_updated).toLocaleString()}
+                          v{resume.versions.length} • {new Date(resume.last_updated).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                   ))}
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={resetForm}
-                  className="mt-4"
-                >
-                  Start New Job Entry
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+              ) : (
+                <p className="text-sm text-gray-500">
+                  No resumes linked yet. Upload one above to keep it with this job.
+                </p>
+              )}
+              <DemoNotice message="Demo: Links to resumes reset periodically — in the full app, they're permanent." />
+            </CardContent>
+          </Card>
+
+          {/* Card 3: Start Working on a DIFFERENT Job */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Want to save another job?</CardTitle>
+              <CardDescription>Start a new entry to capture a different posting</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                variant="outline" 
+                onClick={resetForm}
+                className="w-full"
+              >
+                Start New Job Entry
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       )}
       

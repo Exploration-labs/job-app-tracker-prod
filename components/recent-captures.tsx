@@ -67,7 +67,8 @@ export function RecentCaptures({ refreshTrigger }: RecentCapturesProps) {
     return new Date(dateString).toLocaleString();
   };
 
-  const truncateText = (text: string, maxLength: number = 150) => {
+  const truncateText = (text: string | null | undefined, maxLength: number = 150) => {
+    if (!text) return 'No description available';
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };

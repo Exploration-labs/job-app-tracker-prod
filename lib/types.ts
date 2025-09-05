@@ -1,3 +1,5 @@
+// Unified JobApplication entity - represents a job throughout its entire lifecycle:
+// Saved (job description captured) → Interested → Applied → Interviewing → Offer/Rejected/Withdrawn
 export interface JobDescription {
   uuid: string;
   company: string | null;
@@ -9,8 +11,8 @@ export interface JobDescription {
   source_html_path?: string;
   capture_method?: 'manual' | 'url_fetch' | 'browser_helper';
   captured_at?: string;
-  // Application tracking
-  application_status?: 'applied' | 'interviewing' | 'offer' | 'rejected' | 'withdrawn' | 'interested';
+  // Application tracking - unified JobApplication lifecycle
+  application_status?: 'saved' | 'interested' | 'applied' | 'interviewing' | 'offer' | 'rejected' | 'withdrawn';
   next_reminder?: string; // ISO date string for next reminder
   applied_date?: string; // ISO date string for when application was submitted
   last_updated?: string; // ISO date string for last status update
@@ -39,6 +41,9 @@ export interface JobDescription {
   imported_from?: string; // Original file path when imported
   imported_at?: string; // Import timestamp
 }
+
+// Type alias for clarity in unified workflow contexts
+export type JobApplication = JobDescription;
 
 export interface MergeHistoryEntry {
   timestamp: string;

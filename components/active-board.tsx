@@ -23,14 +23,15 @@ import { updateJobWithFollowupLogic, saveJobWithFollowup } from '@/lib/followup-
 
 interface ActiveBoardProps {
   className?: string;
+  refreshTrigger?: number;
 }
 
 type SortField = 'company' | 'date' | 'status' | 'reminder';
 type SortOrder = 'asc' | 'desc';
 type RejectedFilter = 'hide' | 'show' | 'only';
-type StatusFilter = 'all' | 'interested' | 'applied' | 'interviewing' | 'offer' | 'rejected' | 'withdrawn';
+type StatusFilter = 'all' | 'saved' | 'interested' | 'applied' | 'interviewing' | 'offer' | 'rejected' | 'withdrawn';
 
-export function ActiveBoard({ className }: ActiveBoardProps) {
+export function ActiveBoard({ className, refreshTrigger }: ActiveBoardProps) {
   const [jobs, setJobs] = useState<JobDescription[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -73,26 +74,27 @@ export function ActiveBoard({ className }: ActiveBoardProps) {
     }
   }, []);
 
-  // Fetch jobs
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/jobs');
-        const data = await response.json();
-        
-        // Filter to only active applications (not archived)
-        const activeJobs = data.jobs.filter((job: JobDescription) => !job.is_archived);
-        setJobs(activeJobs);
-      } catch (error) {
-        console.error('Failed to fetch jobs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Fetch jobs function
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/jobs');
+      const data = await response.json();
+      
+      // Filter to only active applications (not archived)
+      const activeJobs = data.jobs.filter((job: JobDescription) => !job.is_archived);
+      setJobs(activeJobs);
+    } catch (error) {
+      console.error('Failed to fetch jobs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Fetch jobs on mount and when refreshTrigger changes
+  useEffect(() => {
     fetchJobs();
-  }, []);
+  }, [refreshTrigger]);
 
   // Save sorting and filter preferences
   useEffect(() => {
@@ -848,14 +850,15 @@ Netflix perks:
           bValue = new Date(b.applied_date || b.fetched_at_iso).getTime();
           break;
         case 'status':
-          // Custom status priority order for better sorting
+          // Custom status priority order for better sorting (follows JobApplication lifecycle)
           const statusPriority = {
-            'interested': 1,
-            'applied': 2,
-            'interviewing': 3,
-            'offer': 4,
-            'rejected': 5,
-            'withdrawn': 6
+            'saved': 1,
+            'interested': 2,
+            'applied': 3,
+            'interviewing': 4,
+            'offer': 5,
+            'rejected': 6,
+            'withdrawn': 7
           };
           aValue = statusPriority[a.application_status || 'interested'] || statusPriority['interested'];
           bValue = statusPriority[b.application_status || 'interested'] || statusPriority['interested'];
@@ -879,7 +882,7 @@ Netflix perks:
   const handleSort = (field: SortField) => {
     if (field === 'status') {
       // Cycle through status filters instead of sorting
-      const statusCycle: StatusFilter[] = ['all', 'interested', 'applied', 'interviewing', 'offer', 'rejected', 'withdrawn'];
+      const statusCycle: StatusFilter[] = ['all', 'saved', 'interested', 'applied', 'interviewing', 'offer', 'rejected', 'withdrawn'];
       const currentIndex = statusCycle.indexOf(statusFilter);
       const nextIndex = (currentIndex + 1) % statusCycle.length;
       setStatusFilter(statusCycle[nextIndex]);
@@ -910,6 +913,8 @@ Netflix perks:
 
   const getStatusColor = (status: JobDescription['application_status']) => {
     switch (status) {
+      case 'saved': return 'bg-slate-100 text-slate-800';
+      case 'interested': return 'bg-purple-100 text-purple-800';
       case 'applied': return 'bg-blue-100 text-blue-800';
       case 'interviewing': return 'bg-yellow-100 text-yellow-800';
       case 'offer': return 'bg-green-100 text-green-800';
@@ -1267,6 +1272,7 @@ Netflix perks:
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
+                              <SelectItem value="saved">Saved</SelectItem>
                               <SelectItem value="interested">Interested</SelectItem>
                               <SelectItem value="applied">Applied</SelectItem>
                               <SelectItem value="interviewing">Interviewing</SelectItem>

@@ -24,7 +24,7 @@ export function AddApplication({ onApplicationAdded }: AddApplicationProps) {
   const [jobDescription, setJobDescription] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [appliedDate, setAppliedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [status, setStatus] = useState<JobDescription['application_status']>('interested');
+  const [status, setStatus] = useState<JobDescription['application_status']>('applied');
   const [showReminderEditor, setShowReminderEditor] = useState(false);
   const [currentApplication, setCurrentApplication] = useState<JobDescription | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -154,7 +154,7 @@ Job Description: [Add job description details here when available]`;
 
 
       // Update the job record on disk with resume information and application details
-      if (resumeInfo || status !== 'interested' || appliedDate !== new Date().toISOString().split('T')[0]) {
+      if (resumeInfo || status !== 'applied' || appliedDate !== new Date().toISOString().split('T')[0]) {
         try {
           const updates: Partial<JobDescription> = {
             application_status: status,
@@ -191,7 +191,7 @@ Job Description: [Add job description details here when available]`;
       setJobDescription('');
       setSourceUrl('');
       setAppliedDate(new Date().toISOString().split('T')[0]);
-      setStatus('interested');
+      setStatus('applied');
       setManualResumeText('');
       setIsOpen(false);
     } catch (error) {
@@ -231,7 +231,7 @@ Job Description: [Add job description details here when available]`;
       setJobDescription('');
       setSourceUrl('');
       setAppliedDate(new Date().toISOString().split('T')[0]);
-      setStatus('interested');
+      setStatus('applied');
       setManualResumeText('');
       setIsOpen(false);
     } finally {
@@ -298,7 +298,7 @@ Job Description: [Add job description details here when available]`;
       setJobDescription('');
       setSourceUrl('');
       setAppliedDate(new Date().toISOString().split('T')[0]);
-      setStatus('interested');
+      setStatus('applied');
       setManualResumeText('');
       setCurrentApplication(null);
       setIsOpen(false);
@@ -419,6 +419,7 @@ Job Description: [Add job description details here when available]`;
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="saved">Saved</SelectItem>
                   <SelectItem value="interested">Interested</SelectItem>
                   <SelectItem value="applied">Applied</SelectItem>
                   <SelectItem value="interviewing">Interviewing</SelectItem>

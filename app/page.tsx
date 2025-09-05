@@ -13,6 +13,12 @@ import UseDemoData from '@/components/use-demo-data';
 
 export default function Home() {
   const [showJobSaver, setShowJobSaver] = useState(false);
+  const [activeBoardRefreshTrigger, setActiveBoardRefreshTrigger] = useState(0);
+
+  const handleJobSaved = () => {
+    // Trigger ActiveBoard refresh when a job is saved via JobDescriptionSaver
+    setActiveBoardRefreshTrigger(prev => prev + 1);
+  };
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -32,7 +38,7 @@ export default function Home() {
         <UseDemoData />
         
         {/* Main Active Board */}
-        <ActiveBoard className="mb-6" />
+        <ActiveBoard className="mb-6" refreshTrigger={activeBoardRefreshTrigger} />
 
         {/* Quick Actions - Compact Row */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
@@ -72,7 +78,7 @@ export default function Home() {
         {/* Collapsible Job Description Saver */}
         {showJobSaver && (
           <div className="animate-in slide-in-from-top-2 duration-300">
-            <JobDescriptionSaver />
+            <JobDescriptionSaver onJobSaved={handleJobSaved} />
           </div>
         )}
       </div>

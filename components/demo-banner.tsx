@@ -49,7 +49,7 @@ export default function DemoBanner() {
               Demo Mode Active
             </h2>
             <p className="text-sm text-blue-800 leading-relaxed">
-              You're viewing a demo version. Uploads work for testing, but data resets periodically and isn't saved permanently.
+              You can test saving jobs and uploading resumes, but files and job-resume links reset periodically. In the full app, all data is saved permanently.
             </p>
           </div>
         </div>
