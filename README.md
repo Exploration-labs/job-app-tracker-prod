@@ -182,6 +182,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**Built with ❤️ for job seekers who want to stay organized and land their dream job.**
+**Built with ❤️ using Pawgrammer.com for job seekers who want to stay organized and land their dream job.**
 
 *Make your job search systematic, not chaotic.*
