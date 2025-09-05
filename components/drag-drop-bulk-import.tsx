@@ -392,8 +392,8 @@ export function DragDropBulkImport() {
               ...f, 
               jobMapping: {
                 jobUuid: selectedJob.uuid,
-                company: selectedJob.company,
-                role: selectedJob.role
+                company: selectedJob.company || 'Unknown Company',
+                role: selectedJob.role || 'Unknown Role'
               }
             }
           : f
