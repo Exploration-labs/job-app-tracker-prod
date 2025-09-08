@@ -1,0 +1,33 @@
+JOHN SMITH
+Software Engineer | Full Stack Developer
+john.smith@email.com | (555) 123-4567 | LinkedIn: linkedin.com/in/johnsmith
+
+PROFESSIONAL EXPERIENCE
+
+Senior Software Engineer | TechCorp Inc. | 2020 - Present
+• Developed and maintained scalable web applications using React, Node.js, and PostgreSQL
+• Led team of 4 developers in implementing microservices architecture
+• Improved application performance by 40% through code optimization and caching strategies
+• Collaborated with product managers to define technical requirements and project timelines
+
+Software Engineer | StartupXYZ | 2018 - 2020
+• Built responsive web applications using modern JavaScript frameworks
+• Implemented RESTful APIs and integrated with third-party services
+• Participated in code reviews and maintained high code quality standards
+• Worked in agile development environment with 2-week sprint cycles
+
+TECHNICAL SKILLS
+• Programming Languages: JavaScript, Python, TypeScript, Java
+• Frontend: React, Vue.js, HTML5, CSS3, SASS
+• Backend: Node.js, Express, Django, Spring Boot
+• Databases: PostgreSQL, MongoDB, MySQL, Redis
+• Tools: Git, Docker, AWS, Jenkins, Webpack
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of Technology | 2018
+
+PROJECTS
+• E-commerce Platform: Built full-stack application with payment processing
+• Task Management App: React-based SPA with real-time updates
+• API Gateway: Microservices routing and authentication system

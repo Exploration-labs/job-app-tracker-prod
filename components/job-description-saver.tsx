@@ -13,7 +13,6 @@ import { ResumeUpload } from '@/components/resume-upload';
 import { JobStorageDialog, JobStorageOptions } from '@/components/job-storage-dialog';
 import { ExternalLink, AlertTriangle, GitMerge, HardDrive, Plus } from 'lucide-react';
 import Link from 'next/link';
-import { DemoNotice } from '@/components/demo/demo-notice';
 import { ResumeViewer } from '@/components/resume/resume-viewer';
 
 interface JobDescriptionSaverProps {
@@ -609,7 +608,6 @@ export function JobDescriptionSaver({ onJobSaved, onApplicationAdded }: JobDescr
                   No resumes linked yet. Upload one above to keep it with this job.
                 </p>
               )}
-              <DemoNotice message="Demo: Links to resumes reset periodically — in the full app, they're permanent." />
               
               {/* Single ResumeViewer for side-by-side display */}
               {uploadedResumes.length > 0 && (

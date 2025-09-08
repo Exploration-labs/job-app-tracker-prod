@@ -1,7 +1,28 @@
 {
-  "name": "job-app-tracker",
-  "version": "0.1.1",
-  "private": true,
+  "name": "job-app-tracker-prod",
+  "version": "1.0.0",
+  "description": "A comprehensive, privacy-focused job application tracker with resume management and browser integration",
+  "author": "Exploration Labs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Exploration-labs/job-app-tracker-prod.git"
+  },
+  "homepage": "https://github.com/Exploration-labs/job-app-tracker-prod",
+  "bugs": {
+    "url": "https://github.com/Exploration-labs/job-app-tracker-prod/issues"
+  },
+  "keywords": [
+    "job-application",
+    "resume-management",
+    "job-search",
+    "interview-prep",
+    "privacy-focused",
+    "self-hosted",
+    "nextjs",
+    "typescript"
+  ],
+  "private": false,
   "scripts": {
     "dev": "next dev",
     "build": "next build",

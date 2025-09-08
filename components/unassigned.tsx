@@ -23,7 +23,6 @@ import {
   FolderUp,
   Lightbulb
 } from 'lucide-react';
-import { DemoNotice } from '@/components/demo/demo-notice';
 
 interface UnassignedProps {
   onAttachToJob?: (resumeId: string) => void;
@@ -344,8 +343,6 @@ export function Unassigned({ onAttachToJob, onCreateJobFromResume }: UnassignedP
             </div>
           </div>
 
-          {/* Demo Notice */}
-          <DemoNotice message="Demo: Files upload for testing but won't persist after reset." />
         </CardContent>
       </Card>
 

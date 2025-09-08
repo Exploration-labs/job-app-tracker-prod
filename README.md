@@ -1,12 +1,14 @@
 # Job Application Tracker
 
-> A comprehensive web application for managing job applications, resumes, and interview preparation with intelligent features and browser integration.
+> A comprehensive, privacy-focused web application for managing job applications, resumes, and interview preparation with intelligent features and browser integration.
 
-## 🚀 Live Demo
+## 🎯 Key Highlights
 
-**[Try the Demo](https://job-app-tracker-demo.onrender.com)** *(Coming Soon)*
-
-Test all features with sample data - no signup required!
+- **🔒 Privacy First**: All data stays on your local machine - no cloud storage
+- **📱 Fully Self-Hosted**: Deploy anywhere you want complete control
+- **🚀 Production Ready**: Built with Next.js 14, TypeScript, and modern tools
+- **🌐 Browser Integration**: Chrome extension for one-click job capture
+- **📊 Complete Workflow**: From job discovery to interview preparation
 
 ## ✨ Features
 
@@ -14,7 +16,7 @@ Test all features with sample data - no signup required!
 - **Version Control**: Track resume versions for different applications
 - **Bulk Import**: Import existing resumes from local folders
 - **Format Support**: Upload PDF, DOCX, and text documents
-- **Auto-naming**: Intelligent file naming based on job details
+- **Auto-naming**: Intelligent file naming based on job details (Company_Role_Date)
 - **Preview & Download**: View resume content before sending
 
 ### 🎯 **Application Tracking**
@@ -53,7 +55,7 @@ Test all features with sample data - no signup required!
 - **State Management**: React hooks and context
 - **Build Tool**: Next.js with optimized production builds
 
-## 🚦 Getting Started
+## 🚦 Quick Start
 
 ### Prerequisites
 - Node.js 18.x or higher
@@ -63,11 +65,14 @@ Test all features with sample data - no signup required!
 
 ```bash
 # Clone the repository
-git clone https://github.com/actsie/job-app-tracker-demo.git
-cd job-app-tracker-demo
+git clone https://github.com/Exploration-labs/job-app-tracker-prod.git
+cd job-app-tracker-prod
 
 # Install dependencies
 npm install
+
+# Copy environment configuration
+cp .env.example .env.local
 
 # Start development server
 npm run dev
@@ -75,7 +80,7 @@ npm run dev
 
 Visit `http://localhost:3000` to see the application.
 
-### Build for Production
+### Production Build
 
 ```bash
 # Create production build
@@ -85,34 +90,80 @@ npm run build
 npm start
 ```
 
-## 🎮 How to Use (Demo Instructions)
+## ⚙️ Configuration
 
-### 1. **Adding Your First Application**
-- Click "Add New Application" 
-- Fill in company name, role, and application date
-- Upload a tailored resume for this application
-- Add job description (manual entry or paste from job board)
+### Environment Variables
 
-### 2. **Resume Management** 
-- Go to "Resume Manager" tab
-- Upload your base resume
-- Create customized versions for specific applications
-- View version history and rollback if needed
+Copy `.env.example` to `.env.local` and configure:
 
-### 3. **Browser Extension** (Development)
-- Install the Chrome extension from `/browser-extension/`
-- Navigate to any job board (LinkedIn, Indeed, etc.)
-- Click the extension icon to capture job details automatically
+```bash
+# File Upload Settings
+MAX_UPLOAD_FILES=20
+MAX_FILE_SIZE_MB=10
+ALLOWED_EXTENSIONS=pdf,docx,doc,rtf,txt
 
-### 4. **Tracking Progress**
-- Update application status as you progress
-- Add notes for interview feedback or follow-ups
-- Use the dashboard to see your application pipeline
+# Storage Settings (optional - defaults to ./managed-resumes and ./data)
+# MANAGED_RESUMES_PATH=/path/to/your/resume/storage
+# DATA_STORAGE_PATH=/path/to/your/data/storage
 
-### 5. **Export & Analysis**
-- Export your data as CSV for external analysis
-- Filter by date range, company, or status
-- Use exported data for personal analytics
+# Optional: Custom branding
+# APP_NAME="Job Application Tracker"
+# APP_DESCRIPTION="Track your job applications and manage resumes"
+```
+
+## 🚀 Deployment Options
+
+### Self-Hosted (Recommended)
+
+#### **VPS/Server Deployment**
+1. Clone repository on your server
+2. Install Node.js and dependencies
+3. Configure environment variables
+4. Run production build
+5. Use PM2 or systemd for process management
+
+```bash
+# Example with PM2
+npm install -g pm2
+npm run build
+pm2 start npm --name "job-tracker" -- start
+```
+
+#### **Docker Deployment**
+```dockerfile
+# Example Dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+RUN npm run build
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+#### **Railway**
+1. Connect your GitHub repository to Railway
+2. Set environment variables in Railway dashboard
+3. Deploy automatically on every push
+
+#### **Render.com**
+1. Connect your GitHub repository to Render
+2. Set environment variables in Render dashboard
+3. Deploy with auto-rebuild on push
+
+### Cloud Platforms
+
+#### **Vercel** (Requires storage modifications)
+- Works out of the box for demo purposes
+- For production, configure external storage (AWS S3, etc.)
+
+#### **Netlify** (Static export)
+```bash
+# Configure for static export
+npm run build
+npm run export
+```
 
 ## 📁 Project Structure
 
@@ -128,64 +179,54 @@ job-app-tracker/
 ├── lib/                    # Utility functions
 ├── browser-extension/      # Chrome extension
 ├── public/                # Static assets
+├── .env.example           # Environment configuration template
 └── README.md              # This file
 ```
 
-## 🔒 Privacy & Data Security
+## 🔒 Privacy & Security
 
-### Local-First Approach
-- **No Cloud Storage**: All data stored locally on your device
-- **Privacy Protected**: Personal information never leaves your computer
+### Local-First Architecture
+- **Complete Privacy**: All personal data stays on your local machine
+- **No Analytics**: No tracking, telemetry, or data collection
 - **Offline Capable**: Full functionality without internet connection
+- **Self-Hosted**: You control where your data lives
 
-### Demo Environment
-- **Temporary Storage**: Demo data resets periodically
-- **No Persistence**: Perfect for testing without privacy concerns  
-- **Clean Slate**: Each demo session starts fresh
+### Security Features
+- Input validation and sanitization
+- File type restrictions and scanning
+- XSS protection with Content Security Policy
+- Secure file handling and storage
 
-### For Production Use
-- All personal data (resumes, job applications) stays on your local machine
-- No tracking, analytics, or data collection
-- Complete control over your sensitive job search information
+## 🎮 How to Use
 
-## 🚀 Deployment Options
+### 1. **Setting Up Your First Application**
+- Click "Add Job" to start the job application wizard
+- Fill in company name, role, and paste the job description
+- Upload a tailored resume for this specific application
 
-### Quick Deploy
+### 2. **Resume Management** 
+- Go to "Resume Manager" to upload and organize your resumes
+- Create different versions for different types of applications
+- Use the "Create Job" feature to start applications with pre-selected resumes
 
-#### **Render.com** (Recommended for demos)
-1. Connect your GitHub repository to Render
-2. Set the following environment variables:
-   ```
-   DEMO_MODE=true
-   NEXT_PUBLIC_DEMO_MODE=true
-   MAX_UPLOAD_FILES=10
-   MAX_FILE_SIZE_MB=5
-   ```
-3. Deploy automatically on every push
+### 3. **Browser Extension** (Optional)
+- Install the Chrome extension from the `browser-extension/` folder
+- Navigate to job boards (LinkedIn, Indeed, etc.)
+- Click the extension icon to capture job details automatically
 
-#### **Demo Banner Configuration**
-The demo banner will automatically show on:
-- Domains containing "demo" (e.g., `myapp-demo.onrender.com`)
-- Render deployments (`.onrender.com`, `.render.app`)
-- When `NEXT_PUBLIC_DEMO_MODE=true` is set
+### 4. **Tracking Progress**
+- Update application status as you progress through the hiring process
+- Add notes for interview feedback and follow-up reminders
+- Use the dashboard to visualize your application pipeline
 
-If the banner isn't showing on your deployment:
-1. Ensure `NEXT_PUBLIC_DEMO_MODE=true` is set in environment variables
-2. Check browser console for config loading messages
-3. Clear localStorage if banner was previously dismissed
-
-#### **Other Platforms**
-- **Vercel**: Serverless deployment (requires storage modifications)
-- **Railway**: Container-based deployment
-
-### Self-Hosted
-- **VPS**: Full control with persistent file storage
-- **Docker**: Containerized deployment with volumes
-- **Local**: Run on your own machine for maximum privacy
+### 5. **Data Export & Analysis**
+- Export your application data as CSV for external analysis
+- Filter exports by date range, company, or application status
+- Use exported data for personal job search analytics
 
 ## 🤝 Contributing
 
-This project is open for contributions! Areas where you can help:
+This is an open-source project! Areas where you can help:
 
 - 🐛 **Bug Fixes**: Report and fix issues
 - ✨ **Features**: Suggest and implement new functionality  
@@ -193,18 +234,27 @@ This project is open for contributions! Areas where you can help:
 - 🎨 **UI/UX**: Enhance the user interface
 - 🔧 **Performance**: Optimize loading and processing
 
+### Development Setup
+
+```bash
+git clone https://github.com/Exploration-labs/job-app-tracker-prod.git
+cd job-app-tracker-prod
+npm install
+npm run dev
+```
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🆘 Support
 
-- **Issues**: Report bugs via [GitHub Issues](https://github.com/actsie/job-app-tracker-demo/issues)
+- **Issues**: Report bugs via [GitHub Issues](https://github.com/Exploration-labs/job-app-tracker-prod/issues)
 - **Discussions**: Feature requests and questions welcome
-- **Documentation**: Check the [Privacy Guide](REPOSITORY-PRIVACY-GUIDE.md) for setup help
+- **Documentation**: Check the guides above for setup help
 
 ---
 
-**Built with ❤️ using Pawgrammer.com for job seekers who want to stay organized and land their dream job.**
+**Built for job seekers who want complete control over their data while staying organized and productive in their job search.**
 
-*Make your job search systematic, not chaotic.*
+*Make your job search systematic, not chaotic - while keeping your privacy intact.*

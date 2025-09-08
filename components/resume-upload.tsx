@@ -7,7 +7,6 @@ import { useToast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { ResumeManifestEntry, ResumeConfig } from '@/lib/types';
 import { Upload, File, CheckCircle, AlertCircle, Settings } from 'lucide-react';
-import { DemoNotice } from '@/components/demo/demo-notice';
 
 interface ResumeUploadProps {
   jobUuid: string;
@@ -327,9 +326,6 @@ export function ResumeUpload({ jobUuid, company, role, yourName, onUploadComplet
             <Progress value={isExtracting ? 50 : uploadProgress} className="w-full" />
           </div>
         )}
-
-        {/* Demo Notice */}
-        <DemoNotice message="Demo: Files upload for testing but won't persist after reset." />
 
         {/* Info */}
         <div className="text-xs text-gray-500 space-y-1">

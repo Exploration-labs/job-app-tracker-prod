@@ -8,7 +8,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { FileText, Settings, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
-import DemoBanner from '@/components/demo-banner';
 
 export default function Home() {
   const [showJobSaver, setShowJobSaver] = useState(false);
@@ -72,8 +71,6 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-4 space-y-6">
-        {/* Demo Banner */}
-        <DemoBanner />
         
         {/* Header */}
         <div className="text-center space-y-4 py-6">
