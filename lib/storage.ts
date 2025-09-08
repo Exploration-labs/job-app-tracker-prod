@@ -26,7 +26,7 @@ export async function saveJobDescription(
   roleOverride?: string,
   formattedContent?: FormattedContent | null,
   resumeTextExtracted?: string,
-  resumeTextSource?: string
+  resumeTextSource?: 'extracted' | 'manual' | 'none'
 ): Promise<{ jsonPath: string; txtPath: string; uuid: string }> {
   await ensureStorageDirectory();
   
