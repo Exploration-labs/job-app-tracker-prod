@@ -13,10 +13,11 @@ interface ResumeUploadProps {
   jobUuid: string;
   company: string;
   role: string;
+  yourName?: string;
   onUploadComplete?: (resume: ResumeManifestEntry) => void;
 }
 
-export function ResumeUpload({ jobUuid, company, role, onUploadComplete }: ResumeUploadProps) {
+export function ResumeUpload({ jobUuid, company, role, yourName, onUploadComplete }: ResumeUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -143,6 +144,9 @@ export function ResumeUpload({ jobUuid, company, role, onUploadComplete }: Resum
       formData.append('company', company);
       formData.append('role', role);
       formData.append('keepOriginal', keepOriginal.toString());
+      if (yourName?.trim()) {
+        formData.append('yourName', yourName.trim());
+      }
 
       // Simulate progress for better UX
       const progressInterval = setInterval(() => {
@@ -171,12 +175,23 @@ export function ResumeUpload({ jobUuid, company, role, onUploadComplete }: Resum
       // Auto-extract text from uploaded resume
       await extractTextFromResume(result.resume, activeVersion);
       
+      // Fetch the updated resume data with extracted text
+      let finalResumeData = result.resume;
+      try {
+        const updatedResponse = await fetch(`/api/resume/manifest?resumeId=${result.resume.id}`);
+        if (updatedResponse.ok) {
+          finalResumeData = await updatedResponse.json();
+        }
+      } catch (error) {
+        console.warn('Failed to fetch updated resume data:', error);
+      }
+      
       toast({
         title: isNewVersion ? "New Resume Version Created!" : "Resume Uploaded Successfully!",
         description: `Resume${versionLabel} saved and text extracted for easy viewing.`,
       });
 
-      onUploadComplete?.(result.resume);
+      onUploadComplete?.(finalResumeData);
 
     } catch (error) {
       toast({
@@ -294,7 +309,8 @@ export function ResumeUpload({ jobUuid, company, role, onUploadComplete }: Resum
                 </button>
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                Supported: {config.supported_file_types.join(', ')} (max 10MB)
+                Supported: {config.supported_file_types.join(', ')} (max 10MB)<br />
+                <strong>Recommended:</strong> .docx files for best text extraction results
               </p>
             </div>
           </div>

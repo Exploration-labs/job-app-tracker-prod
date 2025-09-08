@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
     const jobUuid = formData.get('jobUuid') as string;
     const company = formData.get('company') as string;
     const role = formData.get('role') as string;
+    const yourName = formData.get('yourName') as string || '';
     const keepOriginal = formData.get('keepOriginal') === 'true';
 
     if (!file) {
@@ -46,7 +47,8 @@ export async function POST(request: NextRequest) {
         jobUuid,
         company.trim(),
         role.trim(),
-        keepOriginal
+        keepOriginal,
+        yourName.trim()
       );
 
       // Log the upload operation

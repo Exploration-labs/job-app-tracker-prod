@@ -3,6 +3,7 @@ import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { createHash } from 'crypto';
 import { JobDescription } from './types';
+import { FormattedContent } from './content-formatter';
 
 const STORAGE_DIR = join(process.cwd(), 'job-descriptions');
 
@@ -20,7 +21,12 @@ export async function saveJobDescription(
   company: string | null = null,
   role: string | null = null,
   sourceHtml?: string,
-  captureMethod: 'manual' | 'url_fetch' | 'browser_helper' = 'manual'
+  captureMethod: 'manual' | 'url_fetch' | 'browser_helper' = 'manual',
+  companyOverride?: string,
+  roleOverride?: string,
+  formattedContent?: FormattedContent | null,
+  resumeTextExtracted?: string,
+  resumeTextSource?: string
 ): Promise<{ jsonPath: string; txtPath: string; uuid: string }> {
   await ensureStorageDirectory();
   
@@ -30,14 +36,21 @@ export async function saveJobDescription(
   
   const jobDescription: JobDescription = {
     uuid,
-    company,
-    role,
+    company: companyOverride || company,
+    role: roleOverride || role,
     jd_text: text,
+    // Add new 3-format fields from formatted content
+    raw_html: formattedContent?.raw_html || sourceHtml,
+    markdown: formattedContent?.markdown,
+    plain_text_excerpt: formattedContent?.plain_text_excerpt || text.substring(0, 2000),
     source_url: sourceUrl,
     fetched_at_iso: timestamp,
     content_hash: contentHash,
     capture_method: captureMethod,
     captured_at: timestamp,
+    // Add resume text fields for interview prep
+    resumeTextExtracted,
+    resumeTextSource,
   };
 
   const jsonFilename = `${uuid}.json`;

@@ -101,11 +101,11 @@ export function ResumeViewer({ resume, className }: ResumeViewerProps) {
             
             <TabsContent value="preview" className="mt-4">
               {hasExtractedText ? (
-                <ScrollArea className="h-96 w-full border rounded-md p-4">
+                <div className="w-full border rounded-md p-4 max-h-none overflow-visible">
                   <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed">
                     {activeVersion.extracted_text}
                   </pre>
-                </ScrollArea>
+                </div>
               ) : extractionFailed ? (
                 <div className="p-6 text-center border rounded-md bg-red-50">
                   <AlertCircle className="h-8 w-8 mx-auto mb-2 text-red-500" />
@@ -169,11 +169,11 @@ export function ResumeViewer({ resume, className }: ResumeViewerProps) {
           // Only preview tab (DOCX files)
           <div className="w-full">
             {hasExtractedText ? (
-              <ScrollArea className="h-96 w-full border rounded-md p-4">
+              <div className="w-full border rounded-md p-4 max-h-none overflow-visible">
                 <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed">
                   {activeVersion.extracted_text}
                 </pre>
-              </ScrollArea>
+              </div>
             ) : extractionFailed ? (
               <div className="p-6 text-center border rounded-md bg-red-50">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 text-red-500" />

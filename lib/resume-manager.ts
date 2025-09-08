@@ -72,20 +72,23 @@ export class ResumeManagerService {
     return createHash('sha256').update(fileBuffer).digest('hex');
   }
 
-  generateManagedFilename(company: string, role: string, extension: string): string {
+  generateManagedFilename(company: string, role: string, extension: string, yourName: string = ''): string {
     const sanitizeString = (str: string) => str.replace(/[^a-zA-Z0-9]/g, '_');
     const now = new Date();
     
     const sanitizedCompany = sanitizeString(company);
     const sanitizedRole = sanitizeString(role);
+    const sanitizedName = yourName.trim() ? sanitizeString(yourName.trim()) : '';
     
     if (this.config.naming_format === 'Company_Role_Date_Time') {
       const date = now.toISOString().split('T')[0]; // YYYY-MM-DD
       const time = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS
-      return `${sanitizedCompany}_${sanitizedRole}_${date}_${time}${extension}`;
+      const nameSection = sanitizedName ? `_${sanitizedName}` : '';
+      return `${sanitizedCompany}_${sanitizedRole}${nameSection}_${date}_${time}${extension}`;
     } else {
       const date = now.toISOString().split('T')[0]; // YYYY-MM-DD
-      return `${sanitizedCompany}_${sanitizedRole}_${date}${extension}`;
+      const nameSection = sanitizedName ? `_${sanitizedName}` : '';
+      return `${sanitizedCompany}_${sanitizedRole}${nameSection}_${date}${extension}`;
     }
   }
 
@@ -94,7 +97,8 @@ export class ResumeManagerService {
     jobUuid: string,
     company: string,
     role: string,
-    keepOriginal: boolean = this.config.keep_original_default
+    keepOriginal: boolean = this.config.keep_original_default,
+    yourName: string = ''
   ): Promise<ResumeManifestEntry> {
     // Load current config and manifest
     await this.loadConfig();
@@ -147,7 +151,8 @@ export class ResumeManagerService {
           filePath,
           this.config.managed_folder_path,
           originalFilename,
-          keepOriginal
+          keepOriginal,
+          yourName
         );
         
         // Add to manifest

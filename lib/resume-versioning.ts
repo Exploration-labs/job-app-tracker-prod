@@ -199,14 +199,17 @@ export class ResumeVersioningService {
     filePath: string,
     managedFolderPath: string,
     originalFilename: string,
-    keepOriginal: boolean
+    keepOriginal: boolean,
+    yourName: string = ''
   ): Promise<ResumeManifestEntry> {
     const sanitizeString = (str: string) => str.replace(/[^a-zA-Z0-9]/g, '_');
     const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     
     const sanitizedCompany = sanitizeString(company);
     const sanitizedRole = sanitizeString(role);
-    const baseFilename = `${sanitizedCompany}_${sanitizedRole}_${date}`;
+    const sanitizedName = yourName.trim() ? sanitizeString(yourName.trim()) : '';
+    const nameSection = sanitizedName ? `_${sanitizedName}` : '';
+    const baseFilename = `${sanitizedCompany}_${sanitizedRole}${nameSection}_${date}`;
     
     // Get version suffix (should be empty string for first version)
     const versionSuffix = await this.getNextVersionSuffix(

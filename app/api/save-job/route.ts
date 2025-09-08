@@ -13,7 +13,9 @@ export async function POST(request: NextRequest) {
       company, 
       role,
       storageOptions,
-      attachments = []
+      attachments = [],
+      resumeTextExtracted,
+      resumeTextSource
     } = await request.json();
 
     if (!text || typeof text !== 'string' || text.trim().length === 0) {
@@ -42,7 +44,12 @@ export async function POST(request: NextRequest) {
       company || null,
       role || null,
       sourceHtml,
-      url ? 'url_fetch' : 'manual'
+      url ? 'url_fetch' : 'manual',
+      undefined, // companyOverride
+      undefined, // roleOverride
+      null, // formattedContent
+      resumeTextExtracted,
+      resumeTextSource
     );
 
     // Check for duplicates after saving
