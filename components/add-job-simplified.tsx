@@ -152,7 +152,7 @@ export function AddJobSimplified({ onJobSaved, onCancel }: AddJobSimplifiedProps
 
     setIsLoading(true);
     try {
-      const jobData = {
+      const jobData: any = {
         text: description.trim(),
         url: url.trim(),
         company: company.trim(),
