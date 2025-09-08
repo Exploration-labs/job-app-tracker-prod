@@ -5,6 +5,11 @@ export interface JobDescription {
   company: string | null;
   role: string | null;
   jd_text: string;
+  // New formatting fields - 3-format storage
+  raw_html?: string;           // Original HTML from source
+  markdown?: string;           // Formatted markdown version
+  plain_text_excerpt?: string; // First 1-2k chars for search/preview
+  // Existing fields
   source_url: string | null;
   fetched_at_iso: string;
   content_hash: string;
@@ -65,6 +70,13 @@ export interface ExtractionCandidate {
   value: string;
   confidence: number;
   source: string;
+}
+
+export interface ContentSection {
+  type: 'title' | 'responsibilities' | 'requirements' | 'benefits' | 'other';
+  heading: string;
+  content: string;
+  markdown: string;
 }
 
 export interface JobDescriptionPreview {
