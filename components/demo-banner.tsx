@@ -48,9 +48,14 @@ export default function DemoBanner() {
             >
               Demo Mode Active
             </h2>
-            <p className="text-sm text-blue-800 leading-relaxed">
-              You can test saving jobs and uploading resumes, but files and job-resume links reset periodically. In the full app, all data is saved permanently.
-            </p>
+            <div className="space-y-2">
+              <p className="text-sm text-blue-800 leading-relaxed">
+                You can test saving jobs and uploading resumes, but files and job-resume links reset periodically. In the full app, all data is saved permanently.
+              </p>
+              <p className="text-sm text-red-700 font-medium leading-relaxed">
+                ⚠️ Privacy Warning: This demo shares data across all users. Do not upload sensitive personal information, real resumes, or confidential job details.
+              </p>
+            </div>
           </div>
         </div>
         

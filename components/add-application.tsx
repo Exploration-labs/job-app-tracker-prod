@@ -407,6 +407,9 @@ Job Description: [Add job description details here when available]`;
                 value={appliedDate}
                 onChange={(e) => setAppliedDate(e.target.value)}
               />
+              <p className="text-xs text-gray-500">
+                💡 Click the date field to open calendar picker, or use format: YYYY-MM-DD (e.g., 2024-03-15)
+              </p>
             </div>
 
             <div className="space-y-2">
