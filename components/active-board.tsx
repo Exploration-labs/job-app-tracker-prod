@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, EyeOff, ChevronDown, ChevronRight, Trash2, RotateCcw, Bell, Edit2, Calendar, Clock, Mail, Download, History, FileText, Presentation, Plus } from 'lucide-react';
+import { Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, EyeOff, ChevronDown, ChevronRight, Trash2, RotateCcw, Bell, Edit2, Calendar, Clock, Mail, Download, History, FileText, Presentation, Plus, Link, File } from 'lucide-react';
 import { AddApplication } from './add-application';
 import { UpcomingReminders } from './upcoming-reminders';
 import { ReminderEditor } from './reminder-editor';
@@ -20,6 +20,7 @@ import JDViewer from './jd-viewer';
 import InterviewPrepMode from './interview-prep-mode';
 import { notificationManager } from '@/lib/notifications';
 import { updateJobWithFollowupLogic, saveJobWithFollowup } from '@/lib/followup-reminders';
+import { AttachExistingResumeDialog } from './attach-existing-resume-dialog';
 
 interface ActiveBoardProps {
   className?: string;
@@ -54,6 +55,8 @@ export function ActiveBoard({ className, refreshTrigger }: ActiveBoardProps) {
   const [jobForJdViewer, setJobForJdViewer] = useState<JobDescription | null>(null);
   const [interviewPrepOpen, setInterviewPrepOpen] = useState(false);
   const [jobForInterviewPrep, setJobForInterviewPrep] = useState<JobDescription | null>(null);
+  const [attachResumeDialogOpen, setAttachResumeDialogOpen] = useState(false);
+  const [jobForAttachResume, setJobForAttachResume] = useState<JobDescription | null>(null);
   const [highlightedJobId, setHighlightedJobId] = useState<string | null>(null);
   const [clearAllDialogOpen, setClearAllDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -280,6 +283,11 @@ export function ActiveBoard({ className, refreshTrigger }: ActiveBoardProps) {
   const handleInterviewPrep = (job: JobDescription) => {
     setJobForInterviewPrep(job);
     setInterviewPrepOpen(true);
+  };
+
+  const handleAttachResume = (job: JobDescription) => {
+    setJobForAttachResume(job);
+    setAttachResumeDialogOpen(true);
   };
 
   const handleReminderChange = () => {
@@ -1125,6 +1133,12 @@ Netflix perks:
                             </Button>
                           )}
                           <span className="truncate">{job.company || 'Unknown'}</span>
+                          {job.active_resume_version_id && (
+                            <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full ml-2 whitespace-nowrap" title="Resume attached">
+                              <File className="h-3 w-3" />
+                              Resume
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1325,6 +1339,15 @@ Netflix perks:
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => handleAttachResume(job)}
+                            className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 h-8 px-2"
+                            title="Attach existing resume"
+                          >
+                            <Link className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleOpenEmailDraft(job)}
                             className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-2"
                             title="Create follow-up email"
@@ -1479,6 +1502,21 @@ Netflix perks:
           job={jobForInterviewPrep}
         />
       )}
+
+      {/* Attach Existing Resume Dialog */}
+      <AttachExistingResumeDialog
+        isOpen={attachResumeDialogOpen}
+        onClose={() => {
+          setAttachResumeDialogOpen(false);
+          setJobForAttachResume(null);
+        }}
+        jobUuid={jobForAttachResume?.uuid || ''}
+        jobInfo={jobForAttachResume ? {
+          company: jobForAttachResume.company || 'Unknown Company',
+          role: jobForAttachResume.role || 'Unknown Role'
+        } : undefined}
+        onResumeAttached={fetchJobs}
+      />
 
       {/* Clear All Confirmation Dialog */}
       <Dialog open={clearAllDialogOpen} onOpenChange={setClearAllDialogOpen}>

@@ -10,7 +10,7 @@ const MANAGED_RESUMES_PATH = join(process.cwd(), 'managed-resumes');
 
 export async function POST(request: NextRequest) {
   try {
-    const { resumeId, jobUuid } = await request.json();
+    const { resumeId, jobUuid, replaceActive = false, setAsActive = true } = await request.json();
 
     if (!resumeId || !jobUuid) {
       return NextResponse.json(
@@ -75,8 +75,11 @@ export async function POST(request: NextRequest) {
       const versionId = uuidv4();
       const versionSuffix = `_v${existingManifestEntry.versions.length + 1}`;
       
-      // Set all existing versions to inactive
-      existingManifestEntry.versions.forEach(v => v.is_active = false);
+      // Handle version activation based on parameters
+      if (setAsActive) {
+        // Set all existing versions to inactive
+        existingManifestEntry.versions.forEach(v => v.is_active = false);
+      }
 
       const newVersion: ResumeVersionEntry = {
         version_id: versionId,
@@ -86,7 +89,7 @@ export async function POST(request: NextRequest) {
         original_filename: unassignedResume.filename,
         file_checksum: unassignedResume.content_hash,
         upload_timestamp: new Date().toISOString(),
-        is_active: true
+        is_active: setAsActive
       };
 
       existingManifestEntry.versions.push(newVersion);
@@ -139,6 +142,35 @@ export async function POST(request: NextRequest) {
 
     // Save resume manifest
     await saveResumeManifest(resumeManifest);
+
+    // Update the job to set the active resume version ID
+    const activeVersionId = existingManifestEntry 
+      ? existingManifestEntry.versions.find(v => v.is_active)?.version_id
+      : resumeManifest.resumes[resumeManifest.resumes.length - 1]?.versions.find(v => v.is_active)?.version_id;
+
+    if (activeVersionId) {
+      try {
+        const jobUpdateResponse = await fetch(`${process.env.NEXTJS_URL || 'http://localhost:3000'}/api/jobs/${jobUuid}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            active_resume_version_id: activeVersionId,
+            resume_filename: unassignedResume.filename,
+            resume_path: managedPath,
+            // Copy extracted text to job record for Interview Prep
+            resumeTextExtracted: unassignedResume.extracted_text || '',
+            resumeTextSource: unassignedResume.extracted_text ? 'extracted' : 'none',
+            extractionStatus: unassignedResume.extraction_status || 'ok'
+          })
+        });
+
+        if (!jobUpdateResponse.ok) {
+          console.warn('Failed to update job with active resume version ID');
+        }
+      } catch (error) {
+        console.warn('Error updating job with active resume version ID:', error);
+      }
+    }
 
     // Remove from unassigned
     unassignedManifest.resumes.splice(resumeIndex, 1);

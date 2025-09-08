@@ -108,13 +108,13 @@ async function handleSingleUpload(file: File) {
     // Load current manifest
     const manifest = await loadUnassignedManifest();
     
-    // Check for duplicates
+    // Check for duplicates - treat as attachment opportunities
     const existingResume = manifest.resumes.find(r => r.content_hash === contentHash);
     if (existingResume) {
       return NextResponse.json({
         duplicate: true,
         existing: existingResume,
-        message: 'File already imported'
+        message: 'Already in library - ready to attach to jobs'
       });
     }
 
@@ -278,14 +278,14 @@ async function handleBulkUpload(files: File[]) {
         // Calculate content hash for deduplication
         const contentHash = createHash('sha256').update(buffer).digest('hex');
         
-        // Check for duplicates
+        // Check for duplicates - treat as attachment opportunities
         const existingResume = manifest.resumes.find(r => r.content_hash === contentHash);
         if (existingResume) {
           results.duplicates++;
           results.details.push({
             filename: file.name,
             status: 'duplicate',
-            message: 'File already imported',
+            message: 'Already in library - ready to attach',
             resume: existingResume
           });
           continue;
@@ -353,15 +353,16 @@ async function handleBulkUpload(files: File[]) {
     // Save updated manifest once
     await saveUnassignedManifest(manifest);
 
-    // Generate summary message
+    // Generate user-friendly summary message
     const messages = [];
-    if (results.imported > 0) messages.push(`${results.imported} imported`);
-    if (results.duplicates > 0) messages.push(`${results.duplicates} duplicates`);
+    if (results.imported > 0) messages.push(`${results.imported} new files added`);
+    if (results.duplicates > 0) messages.push(`${results.duplicates} files already in library - ready to attach`);
     if (results.errors > 0) messages.push(`${results.errors} errors`);
 
     return NextResponse.json({
       success: true,
       summary: messages.join(', '),
+      showAttachOption: results.duplicates > 0,
       ...results
     });
 

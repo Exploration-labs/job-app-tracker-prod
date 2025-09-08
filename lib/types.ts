@@ -29,6 +29,7 @@ export interface JobDescription {
   resume_id?: string; // Reference to the resume used for this application
   resume_filename?: string; // Original filename of the resume used
   resume_path?: string; // Path to the resume file (if managed)
+  active_resume_version_id?: string; // ID of the currently active resume version for this job
   // Resume text management
   resumeTextExtracted?: string; // Text extracted from resume file
   resumeTextManual?: string; // Manually input resume text

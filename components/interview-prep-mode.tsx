@@ -171,9 +171,32 @@ export function InterviewPrepMode({ isOpen, onClose, job }: InterviewPrepModePro
 
       // Load resume information for this job
       try {
-        // First check if job has a resume mapped to it
-        const jobResume = job as JobDescription & JobResume;
-        if (jobResume.resume_id) {
+        // Check if job has an active resume version ID set
+        if (job.active_resume_version_id) {
+          console.log('Interview Prep: Found active_resume_version_id:', job.active_resume_version_id);
+          
+          // Load the resume manifest for this job to find the active version
+          const resumeManifest = await resumeManager.getResumeForJob(job.uuid);
+          if (resumeManifest) {
+            const resumeVersions = resumeManifest.versions.map(v => ({
+              id: v.version_id,
+              filename: resumeManifest.base_filename + resumeManifest.file_extension,
+              path: v.managed_path,
+              uploaded_at: v.upload_timestamp,
+              is_active: v.version_id === job.active_resume_version_id,
+              mime_type: v.mime_type
+            }));
+            setResumeVersions(resumeVersions);
+            
+            // Find and select the version that matches the active_resume_version_id
+            const activeResume = resumeVersions.find(v => v.id === job.active_resume_version_id);
+            if (activeResume) {
+              console.log('Interview Prep: Auto-selecting active resume version:', activeResume.filename);
+              await selectResume(activeResume);
+            }
+          }
+        } else if (job.resume_id) {
+          // Fallback: Check if job has a resume mapped to it (legacy approach)
           const resumeManifest = await resumeManager.getResumeForJob(job.uuid);
           if (resumeManifest) {
             const resumeVersions = resumeManifest.versions.map(v => ({
@@ -181,7 +204,8 @@ export function InterviewPrepMode({ isOpen, onClose, job }: InterviewPrepModePro
               filename: resumeManifest.base_filename + '.' + resumeManifest.file_extension,
               path: v.managed_path,
               uploaded_at: v.upload_timestamp,
-              is_active: v.is_active
+              is_active: v.is_active,
+              mime_type: v.mime_type
             }));
             setResumeVersions(resumeVersions);
             

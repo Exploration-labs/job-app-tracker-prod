@@ -112,11 +112,33 @@ export function Unassigned({ onAttachToJob, onCreateJobFromResume }: UnassignedP
 
       if (response.ok) {
         // Use the server-generated summary
+        const toastVariant = result.errors > 0 ? "destructive" : "default";
+        
         toast({
           title: "Upload Complete",
           description: result.summary || "Files processed",
-          variant: result.imported > 0 ? "default" : "destructive",
+          variant: toastVariant,
         });
+
+        // If there were duplicates, offer to open batch attach wizard
+        if (result.showAttachOption && result.duplicates > 0) {
+          // Add a follow-up action to attach existing files
+          setTimeout(() => {
+            toast({
+              title: "Files Ready to Attach",
+              description: `${result.duplicates} files are already in your library. Open batch attach to link them to jobs?`,
+              action: (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setShowBatchWizard(true)}
+                >
+                  Attach Files
+                </Button>
+              ),
+            });
+          }, 2000);
+        }
       } else {
         toast({
           title: "Upload Failed",
