@@ -151,7 +151,30 @@ job-app-tracker/
 ## 🚀 Deployment Options
 
 ### Quick Deploy
-- **Render.com**: One-click deployment (recommended for demos)
+
+#### **Render.com** (Recommended for demos)
+1. Connect your GitHub repository to Render
+2. Set the following environment variables:
+   ```
+   DEMO_MODE=true
+   NEXT_PUBLIC_DEMO_MODE=true
+   MAX_UPLOAD_FILES=10
+   MAX_FILE_SIZE_MB=5
+   ```
+3. Deploy automatically on every push
+
+#### **Demo Banner Configuration**
+The demo banner will automatically show on:
+- Domains containing "demo" (e.g., `myapp-demo.onrender.com`)
+- Render deployments (`.onrender.com`, `.render.app`)
+- When `NEXT_PUBLIC_DEMO_MODE=true` is set
+
+If the banner isn't showing on your deployment:
+1. Ensure `NEXT_PUBLIC_DEMO_MODE=true` is set in environment variables
+2. Check browser console for config loading messages
+3. Clear localStorage if banner was previously dismissed
+
+#### **Other Platforms**
 - **Vercel**: Serverless deployment (requires storage modifications)
 - **Railway**: Container-based deployment
 

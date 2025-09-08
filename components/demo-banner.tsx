@@ -12,8 +12,15 @@ export default function DemoBanner() {
   const [show, setShow] = useState(false);
   
   useEffect(() => {
-    // Only show in client-side demo mode
-    if (config.demo.client) {
+    // Show banner if explicitly in demo mode OR if domain contains 'demo' or it's a Render deployment
+    const isDemoEnvironment = config.demo.client || 
+      (typeof window !== 'undefined' && (
+        window.location.hostname.includes('demo') ||
+        window.location.hostname.includes('onrender.com') ||
+        window.location.hostname.includes('render.app')
+      ));
+      
+    if (isDemoEnvironment) {
       const dismissed = localStorage.getItem('demo-banner-dismissed');
       if (dismissed !== 'true') {
         setShow(true);
