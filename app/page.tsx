@@ -7,23 +7,52 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Toaster } from '@/components/ui/toaster';
 import { FileText, Settings, Plus } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import DemoBanner from '@/components/demo-banner';
 
 export default function Home() {
   const [showJobSaver, setShowJobSaver] = useState(false);
   const [activeBoardRefreshTrigger, setActiveBoardRefreshTrigger] = useState(0);
+  const [preselectedResumeId, setPreselectedResumeId] = useState<string | null>(null);
   const jobSaverRef = useRef<HTMLDivElement>(null);
 
   const handleJobSaved = () => {
     // Trigger ActiveBoard refresh when a job is saved via JobDescriptionSaver
     setActiveBoardRefreshTrigger(prev => prev + 1);
+    // Reset preselected resume after job is saved
+    setPreselectedResumeId(null);
   };
 
   const handleApplicationAdded = () => {
     // Trigger ActiveBoard refresh when an application is added from recent captures
     setActiveBoardRefreshTrigger(prev => prev + 1);
   };
+
+  // Handle URL parameters for Create Job from Resume Manager
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const resumeId = urlParams.get('resumeId');
+      const fromSource = urlParams.get('from');
+      const step = urlParams.get('step');
+
+      if (resumeId && fromSource === 'resumeManager' && step === '1') {
+        setPreselectedResumeId(resumeId);
+        setShowJobSaver(true);
+        
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, '/');
+        
+        // Scroll to job saver after opening
+        setTimeout(() => {
+          jobSaverRef.current?.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }, 100);
+      }
+    }
+  }, []);
 
   const handleAddJobClick = () => {
     const newState = !showJobSaver;
@@ -88,7 +117,11 @@ export default function Home() {
           <div ref={jobSaverRef} className="animate-in slide-in-from-top-2 duration-300">
             <AddJobSimplified 
               onJobSaved={handleJobSaved}
-              onCancel={() => setShowJobSaver(false)}
+              onCancel={() => {
+                setShowJobSaver(false);
+                setPreselectedResumeId(null);
+              }}
+              preselectedResumeId={preselectedResumeId}
             />
           </div>
         )}

@@ -125,8 +125,13 @@ export default function ResumeManagerPage() {
                   console.log('Attach resume to job:', resumeId);
                 }}
                 onCreateJobFromResume={(resumeId) => {
-                  // TODO: Implement create job from resume
-                  console.log('Create job from resume:', resumeId);
+                  // Navigate to home page with Add Job wizard open and resume preselected
+                  const params = new URLSearchParams({
+                    from: 'resumeManager',
+                    resumeId: resumeId,
+                    step: '1'
+                  });
+                  window.location.href = `/?${params.toString()}`;
                 }}
               />
             </div>
