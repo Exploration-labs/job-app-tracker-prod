@@ -1,7 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Document, Page } from 'react-pdf';
+import dynamic from 'next/dynamic';
+
+// Dynamically import PDF components to avoid SSR issues
+const Document = dynamic(() => import('react-pdf').then(mod => ({ default: mod.Document })), {
+  ssr: false,
+  loading: () => <div className="animate-pulse">Loading PDF...</div>
+});
+const Page = dynamic(() => import('react-pdf').then(mod => ({ default: mod.Page })), {
+  ssr: false
+});
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Eye, FileText, AlertCircle, Download, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -39,7 +48,7 @@ export function ResumePreview({
   useEffect(() => {
     // Configure pdf.js worker
     if (typeof window !== 'undefined') {
-      import('pdfjs-dist/webpack').then((pdfjs) => {
+      import('pdfjs-dist').then((pdfjs) => {
         pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
       });
     }

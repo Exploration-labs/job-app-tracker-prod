@@ -257,7 +257,7 @@ export function BatchAttachWizard({
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                       <Input
-                        ref={el => searchRefs.current[index] = el}
+                        ref={el => { searchRefs.current[index] = el; }}
                         placeholder="Search jobs by company, role, or description..."
                         value={attachment.searchTerm}
                         onChange={(e) => updateAttachment(index, { searchTerm: e.target.value })}

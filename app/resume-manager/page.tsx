@@ -12,7 +12,8 @@ import {
   FileText, 
   FolderUp, 
   RotateCcw,
-  ArrowLeft 
+  ArrowLeft,
+  Upload
 } from 'lucide-react';
 
 type TabType = 'unassigned' | 'manager' | 'settings' | 'operations';

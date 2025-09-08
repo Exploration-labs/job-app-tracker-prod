@@ -48,7 +48,7 @@ async function loadUnassignedManifest(): Promise<{ resumes: UnassignedResumeEntr
   }
 }
 
-export async function saveUnassignedManifest(manifest: { resumes: UnassignedResumeEntry[] }) {
+async function saveUnassignedManifest(manifest: { resumes: UnassignedResumeEntry[] }) {
   await ensureDataDirectory();
   await fs.writeFile(UNASSIGNED_MANIFEST_PATH, JSON.stringify(manifest, null, 2));
 }

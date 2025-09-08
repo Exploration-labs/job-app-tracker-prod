@@ -110,7 +110,6 @@ export async function POST(request: NextRequest) {
         filename_components: {
           company: company,
           role: role,
-          your_name: '', // Will be filled when user sets preference
           date: date
         },
         file_extension: fileExtension,
