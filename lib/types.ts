@@ -181,6 +181,21 @@ export interface BulkImportOperation {
   status: 'preview' | 'completed' | 'cancelled';
 }
 
+// Unassigned resume entry - resumes in the holding area before job assignment
+export interface UnassignedResumeEntry {
+  id: string;
+  filename: string;
+  original_path?: string; // Original path if imported
+  managed_path: string; // Where file is stored
+  file_size: number; // File size in bytes
+  file_extension: string; // .pdf, .docx, etc.
+  content_hash: string; // For deduplication
+  uploaded_at: string; // ISO timestamp
+  extracted_text?: string; // Extracted text content
+  extraction_status?: 'pending' | 'success' | 'failed';
+  preview_available: boolean; // Whether preview can be shown
+}
+
 export interface OperationLogEntry {
   id: string;
   operation_type: 'upload' | 'bulk_import' | 'delete' | 'restore' | 'rename' | 'rollback';

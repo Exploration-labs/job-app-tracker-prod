@@ -44,6 +44,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       text: result.text,
       jd_text: result.text,
+      // New 3-format fields
+      raw_html: result.raw_html,
+      markdown: result.markdown,
+      plain_text_excerpt: result.plain_text_excerpt,
+      // Enhanced parsing
       company: parsed.company,
       role: parsed.role,
       hasHtml: !!result.html,

@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import { parseJobDescription } from './job-parser';
+import { parseJobDescription } from './enhanced-job-parser';
+import { formatJobDescription } from './content-formatter';
 import { saveJobDescription } from './storage';
 import { JobDescription } from './types';
 
@@ -13,17 +14,47 @@ export async function saveJobDescriptionFromBrowser(
   sourceUrl: string,
   sourceHtml?: string
 ): Promise<{ jsonPath: string; txtPath: string; uuid: string }> {
-  // Parse job description to extract company and role
-  const parsed = parseJobDescription(text);
-  
+  // Format content using new pipeline if HTML is available
+  let formatted = null;
+  let company = null;
+  let role = null;
+
+  try {
+    if (sourceHtml) {
+      // Use content formatter for 3-format processing
+      formatted = await formatJobDescription(sourceHtml, sourceUrl, '');
+      
+      // Parse job description for company/role extraction
+      const parsed = parseJobDescription(text, {
+        url: sourceUrl,
+        html: sourceHtml
+      });
+      
+      company = parsed.company;
+      role = parsed.role;
+    } else {
+      // Fallback: parse text only
+      const parsed = parseJobDescription(text, { url: sourceUrl });
+      company = parsed.company;
+      role = parsed.role;
+    }
+  } catch (error) {
+    console.warn('Content formatting failed in browser capture:', error);
+    // Continue with basic text processing
+  }
+
   // Use the unified storage function with browser_helper capture method
+  // Pass formatted content if available
   return await saveJobDescription(
-    text,
+    formatted?.plain_text_excerpt || text, // Use excerpt if available
     sourceUrl,
-    parsed.company,
-    parsed.role,
+    company,
+    role,
     sourceHtml,
-    'browser_helper'
+    'browser_helper',
+    undefined, // company override
+    undefined, // role override  
+    formatted  // Pass formatted content
   );
 }
 

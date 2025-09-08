@@ -1,7 +1,7 @@
 'use client';
 
 import { ActiveBoard } from '@/components/active-board';
-import { JobDescriptionSaver } from '@/components/job-description-saver';
+import { AddJobSimplified } from '@/components/add-job-simplified';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Toaster } from '@/components/ui/toaster';
@@ -83,12 +83,12 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Collapsible Job Description Saver */}
+        {/* Collapsible Add Job Form */}
         {showJobSaver && (
           <div ref={jobSaverRef} className="animate-in slide-in-from-top-2 duration-300">
-            <JobDescriptionSaver 
+            <AddJobSimplified 
               onJobSaved={handleJobSaved}
-              onApplicationAdded={handleApplicationAdded}
+              onCancel={() => setShowJobSaver(false)}
             />
           </div>
         )}

@@ -5,24 +5,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { ResumeSettings } from '@/components/resume-settings';
 import { ResumeManager } from '@/components/resume-manager';
-import { BulkImport } from '@/components/bulk-import';
+import { Unassigned } from '@/components/unassigned';
 import { UndoOperations } from '@/components/undo-operations';
 import { 
   Settings, 
   FileText, 
-  Upload, 
+  FolderUp, 
   RotateCcw,
   ArrowLeft 
 } from 'lucide-react';
 
-type TabType = 'manager' | 'bulk-import' | 'settings' | 'operations';
+type TabType = 'unassigned' | 'manager' | 'settings' | 'operations';
 
 export default function ResumeManagerPage() {
-  const [activeTab, setActiveTab] = useState<TabType>('manager');
+  const [activeTab, setActiveTab] = useState<TabType>('unassigned');
 
   const tabs = [
+    { id: 'unassigned' as TabType, label: 'Unassigned', icon: FolderUp },
     { id: 'manager' as TabType, label: 'Resume Manager', icon: FileText },
-    { id: 'bulk-import' as TabType, label: 'Bulk Import', icon: Upload },
     { id: 'settings' as TabType, label: 'Settings', icon: Settings },
     { id: 'operations' as TabType, label: 'Operations', icon: RotateCcw },
   ];
@@ -69,6 +69,68 @@ export default function ResumeManagerPage() {
 
         {/* Tab Content */}
         <div className="space-y-6">
+          {activeTab === 'unassigned' && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Unassigned Resumes</CardTitle>
+                  <CardDescription>
+                    Your resume holding area - drop files here and attach them to jobs quickly
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card className="bg-blue-50 border-blue-200">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2">
+                            <FolderUp className="h-5 w-5 text-blue-600" />
+                            <div>
+                              <p className="font-medium">Drop & Upload</p>
+                              <p className="text-sm text-gray-600">Drag files or folders here</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-green-50 border-green-200">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-5 w-5 text-green-600" />
+                            <div>
+                              <p className="font-medium">Quick Attach</p>
+                              <p className="text-sm text-gray-600">≤2 clicks to attach to job</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-purple-50 border-purple-200">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2">
+                            <Settings className="h-5 w-5 text-purple-600" />
+                            <div>
+                              <p className="font-medium">Preview & Manage</p>
+                              <p className="text-sm text-gray-600">View before attaching</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Unassigned 
+                onAttachToJob={(resumeId) => {
+                  // TODO: Implement quick attach workflow
+                  console.log('Attach resume to job:', resumeId);
+                }}
+                onCreateJobFromResume={(resumeId) => {
+                  // TODO: Implement create job from resume
+                  console.log('Create job from resume:', resumeId);
+                }}
+              />
+            </div>
+          )}
+
           {activeTab === 'manager' && (
             <div className="space-y-6">
               <Card>
@@ -122,58 +184,6 @@ export default function ResumeManagerPage() {
             </div>
           )}
 
-          {activeTab === 'bulk-import' && (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Bulk Import</CardTitle>
-                  <CardDescription>
-                    Import multiple resume files from a folder and map them to your job applications
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <Card className="bg-orange-50 border-orange-200">
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-2">
-                            <Upload className="h-5 w-5 text-orange-600" />
-                            <div>
-                              <p className="font-medium">Folder Scanning</p>
-                              <p className="text-sm text-gray-600">Auto-detect resume files</p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-cyan-50 border-cyan-200">
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-5 w-5 text-cyan-600" />
-                            <div>
-                              <p className="font-medium">Smart Mapping</p>
-                              <p className="text-sm text-gray-600">Auto-match to jobs</p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-emerald-50 border-emerald-200">
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-2">
-                            <RotateCcw className="h-5 w-5 text-emerald-600" />
-                            <div>
-                              <p className="font-medium">Preview & Apply</p>
-                              <p className="text-sm text-gray-600">Review before import</p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <BulkImport />
-            </div>
-          )}
 
           {activeTab === 'settings' && (
             <div className="space-y-6">

@@ -72,9 +72,16 @@ function extractJobDescriptionContent() {
     // Clean up the text
     bestText = bestText.replace(/\s+/g, ' ').trim();
 
+    // Extract plain text excerpt (first 2KB)
+    const plainTextExcerpt = bestText.length > 2000 
+        ? bestText.substring(0, 1997) + '...'
+        : bestText;
+
     return {
         text: bestText,
         html: bestHtml,
+        raw_html: bestHtml,  // For server-side formatting
+        plain_text_excerpt: plainTextExcerpt,
         url: window.location.href,
         title: document.title
     };

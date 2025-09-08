@@ -1,8 +1,12 @@
 import { JSDOM } from 'jsdom';
+import { formatJobDescription } from './content-formatter';
 
 export async function fetchJobDescriptionFromUrl(url: string): Promise<{
   text: string;
   html?: string;
+  raw_html?: string;
+  markdown?: string;
+  plain_text_excerpt?: string;
   error?: string;
 }> {
   try {
@@ -20,28 +24,78 @@ export async function fetchJobDescriptionFromUrl(url: string): Promise<{
     }
 
     const html = await response.text();
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
+    
+    // Use new content formatter for 3-format processing
+    try {
+      const formatted = await formatJobDescription(html, url, '');
+      
+      // Ensure we have meaningful content
+      if (!formatted.plain_text_excerpt || formatted.plain_text_excerpt.length < 100) {
+        // Fallback to legacy extraction
+        const dom = new JSDOM(html);
+        const document = dom.window.document;
+        removeUnwantedElements(document);
+        const textContent = extractJobDescriptionText(document);
+        
+        if (!textContent || textContent.length < 100) {
+          return {
+            text: '',
+            html,
+            raw_html: html,
+            error: 'Could not extract meaningful job description content from the page',
+          };
+        }
+        
+        return {
+          text: textContent,
+          html,
+          raw_html: html,
+          markdown: textContent, // Fallback markdown
+          plain_text_excerpt: textContent.substring(0, 2000),
+        };
+      }
 
-    removeUnwantedElements(document);
-    
-    const textContent = extractJobDescriptionText(document);
-    
-    if (!textContent || textContent.length < 100) {
       return {
-        text: '',
+        text: formatted.plain_text_excerpt, // Keep compatibility
         html,
-        error: 'Could not extract meaningful job description content from the page',
+        raw_html: formatted.raw_html,
+        markdown: formatted.markdown,
+        plain_text_excerpt: formatted.plain_text_excerpt,
+      };
+      
+    } catch (formattingError) {
+      console.warn('Content formatting failed, using legacy extraction:', formattingError);
+      
+      // Fallback to legacy method
+      const dom = new JSDOM(html);
+      const document = dom.window.document;
+      removeUnwantedElements(document);
+      const textContent = extractJobDescriptionText(document);
+      
+      if (!textContent || textContent.length < 100) {
+        return {
+          text: '',
+          html,
+          raw_html: html,
+          error: 'Could not extract meaningful job description content from the page',
+        };
+      }
+
+      return {
+        text: textContent,
+        html,
+        raw_html: html,
+        markdown: textContent, // Basic fallback
+        plain_text_excerpt: textContent.substring(0, 2000),
       };
     }
-
-    return {
-      text: textContent,
-      html,
-    };
   } catch (error) {
     return {
       text: '',
+      html: '',
+      raw_html: '',
+      markdown: '',
+      plain_text_excerpt: '',
       error: error instanceof Error ? error.message : 'Unknown error occurred',
     };
   }
