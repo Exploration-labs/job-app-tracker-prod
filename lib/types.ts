@@ -40,6 +40,9 @@ export interface JobDescription {
   // Import metadata
   imported_from?: string; // Original file path when imported
   imported_at?: string; // Import timestamp
+  // Enhanced parsing candidates (temporary fields for captured jobs)
+  roleCandidates?: ExtractionCandidate[];
+  companyCandidates?: ExtractionCandidate[];
 }
 
 // Type alias for clarity in unified workflow contexts
@@ -58,11 +61,20 @@ export interface SaveJobDescriptionRequest {
   url?: string;
 }
 
+export interface ExtractionCandidate {
+  value: string;
+  confidence: number;
+  source: string;
+}
+
 export interface JobDescriptionPreview {
   company: string | null;
   role: string | null;
   preview: string;
   source_url?: string | null;
+  // Enhanced extraction candidates for suggestions
+  roleCandidates?: ExtractionCandidate[];
+  companyCandidates?: ExtractionCandidate[];
 }
 
 export interface DuplicateMatch {

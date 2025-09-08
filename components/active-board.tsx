@@ -970,16 +970,6 @@ Netflix perks:
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleLoadTestApplications}
-                className="h-9"
-                title="Load sample test applications for demonstration"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Load Test Apps
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
                 onClick={handleClearAllApplications}
                 className="h-9"
                 title="Clear all applications from the list"

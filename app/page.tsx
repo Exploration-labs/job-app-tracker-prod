@@ -5,11 +5,10 @@ import { JobDescriptionSaver } from '@/components/job-description-saver';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Toaster } from '@/components/ui/toaster';
-import { FileText, Settings, Upload, RotateCcw, Plus } from 'lucide-react';
+import { FileText, Settings, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useRef } from 'react';
 import DemoBanner from '@/components/demo-banner';
-import UseDemoData from '@/components/use-demo-data';
 
 export default function Home() {
   const [showJobSaver, setShowJobSaver] = useState(false);
@@ -18,6 +17,11 @@ export default function Home() {
 
   const handleJobSaved = () => {
     // Trigger ActiveBoard refresh when a job is saved via JobDescriptionSaver
+    setActiveBoardRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleApplicationAdded = () => {
+    // Trigger ActiveBoard refresh when an application is added from recent captures
     setActiveBoardRefreshTrigger(prev => prev + 1);
   };
 
@@ -50,14 +54,12 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Demo Data Section */}
-        <UseDemoData />
         
         {/* Main Active Board */}
         <ActiveBoard className="mb-6" refreshTrigger={activeBoardRefreshTrigger} />
 
         {/* Quick Actions - Compact Row */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
           <Button 
             onClick={handleAddJobClick}
             className="bg-green-600 hover:bg-green-700 text-white"
@@ -73,28 +75,21 @@ export default function Home() {
             </Button>
           </Link>
 
-          <Button variant="outline">
-            <Upload className="h-4 w-4 mr-2" />
-            Import
-          </Button>
-
           <Link href="/settings">
             <Button variant="outline" className="w-full">
               <Settings className="h-4 w-4 mr-2" />
               Settings
             </Button>
           </Link>
-
-          <Button variant="outline">
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Undo
-          </Button>
         </div>
 
         {/* Collapsible Job Description Saver */}
         {showJobSaver && (
           <div ref={jobSaverRef} className="animate-in slide-in-from-top-2 duration-300">
-            <JobDescriptionSaver onJobSaved={handleJobSaved} />
+            <JobDescriptionSaver 
+              onJobSaved={handleJobSaved}
+              onApplicationAdded={handleApplicationAdded}
+            />
           </div>
         )}
       </div>

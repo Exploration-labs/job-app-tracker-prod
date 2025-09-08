@@ -18,9 +18,10 @@ import { ResumeViewer } from '@/components/resume/resume-viewer';
 
 interface JobDescriptionSaverProps {
   onJobSaved?: () => void;
+  onApplicationAdded?: (application: JobDescription) => void;
 }
 
-export function JobDescriptionSaver({ onJobSaved }: JobDescriptionSaverProps) {
+export function JobDescriptionSaver({ onJobSaved, onApplicationAdded }: JobDescriptionSaverProps) {
   const [text, setText] = useState('');
   const [url, setUrl] = useState('');
   const [pasteUrl, setPasteUrl] = useState('');
@@ -656,7 +657,10 @@ export function JobDescriptionSaver({ onJobSaved }: JobDescriptionSaverProps) {
         />
       )}
       
-      <RecentCaptures refreshTrigger={refreshKey} />
+      <RecentCaptures 
+        refreshTrigger={refreshKey} 
+        onApplicationAdded={onApplicationAdded}
+      />
     </div>
   );
 }

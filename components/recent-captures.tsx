@@ -6,15 +6,19 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, FileText, Calendar, Globe } from 'lucide-react';
 import { JobDescription } from '@/lib/types';
+import { QuickAddModal } from './quick-add-modal';
 
 interface RecentCapturesProps {
   refreshTrigger?: number;
+  onApplicationAdded?: (application: JobDescription) => void;
 }
 
-export function RecentCaptures({ refreshTrigger }: RecentCapturesProps) {
+export function RecentCaptures({ refreshTrigger, onApplicationAdded }: RecentCapturesProps) {
   const [captures, setCaptures] = useState<JobDescription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [quickAddModalOpen, setQuickAddModalOpen] = useState(false);
+  const [selectedCapture, setSelectedCapture] = useState<JobDescription | null>(null);
 
   const fetchRecentCaptures = async () => {
     try {
@@ -52,15 +56,15 @@ export function RecentCaptures({ refreshTrigger }: RecentCapturesProps) {
     }
   };
 
-  const handleOpenFile = (uuid: string) => {
-    // Open the JSON file in the default application
-    if (typeof window !== 'undefined' && 'showOpenFilePicker' in window) {
-      // Modern file system access API (limited browser support)
-      alert(`File UUID: ${uuid}\nLocation: job-descriptions/${uuid}.json`);
-    } else {
-      // Fallback: show file path
-      alert(`File saved as:\nJSON: job-descriptions/${uuid}.json\nText: job-descriptions/${uuid}.txt`);
-    }
+  const handleOpenCapture = (capture: JobDescription) => {
+    setSelectedCapture(capture);
+    setQuickAddModalOpen(true);
+  };
+
+  const handleApplicationAdded = (application: JobDescription) => {
+    onApplicationAdded?.(application);
+    // Optionally refresh captures to show updated status
+    fetchRecentCaptures();
   };
 
   const formatDate = (dateString: string) => {
@@ -146,7 +150,7 @@ export function RecentCaptures({ refreshTrigger }: RecentCapturesProps) {
                   </div>
                   <div className="flex gap-2">
                     <Button
-                      onClick={() => handleOpenFile(capture.uuid)}
+                      onClick={() => handleOpenCapture(capture)}
                       variant="outline"
                       size="sm"
                       className="flex items-center gap-1"
@@ -196,6 +200,18 @@ export function RecentCaptures({ refreshTrigger }: RecentCapturesProps) {
           </div>
         )}
       </CardContent>
+      
+      {selectedCapture && (
+        <QuickAddModal
+          isOpen={quickAddModalOpen}
+          onClose={() => {
+            setQuickAddModalOpen(false);
+            setSelectedCapture(null);
+          }}
+          capture={selectedCapture}
+          onApplicationAdded={handleApplicationAdded}
+        />
+      )}
     </Card>
   );
 }

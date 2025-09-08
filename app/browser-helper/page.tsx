@@ -53,101 +53,36 @@ export default function BrowserHelperPage() {
     }
   };
 
-  const bookmarkletCode = `javascript:(function(){
-    const DESKTOP_APP_URL = 'http://localhost:3001';
-    const AUTH_TOKEN = '${authToken}';
-    
-    // Create UI overlay
-    const overlay = document.createElement('div');
-    overlay.id = 'job-tracker-overlay';
-    overlay.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 2px solid #3b82f6; border-radius: 8px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; width: 400px; max-width: 90vw;';
-    
-    overlay.innerHTML = '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;"><h3 style="margin: 0; color: #1f2937;">Job App Tracker</h3><button id="close-btn" style="background: none; border: none; font-size: 18px; cursor: pointer;">&times;</button></div><div id="status" style="padding: 8px; border-radius: 4px; margin-bottom: 12px; display: none;"></div><div style="margin-bottom: 12px;"><strong>URL:</strong><br><div style="font-size: 12px; color: #6b7280; word-break: break-all;">' + window.location.href + '</div></div><button id="capture-btn" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 14px;">Capture Job Description</button>';
-    
-    document.body.appendChild(overlay);
-    
-    function showStatus(message, type = 'success') {
-      const statusDiv = document.getElementById('status');
-      statusDiv.textContent = message;
-      statusDiv.style.cssText = 'padding: 8px; border-radius: 4px; margin-bottom: 12px; display: block; background: ' + (type === 'error' ? '#fef2f2' : type === 'warning' ? '#fefbeb' : '#dcfce7') + '; color: ' + (type === 'error' ? '#dc2626' : type === 'warning' ? '#d97706' : '#166534') + '; font-size: 12px;';
-    }
-    
-    function extractJobDescription() {
-      const selectors = ['.job-description', '.job-details', '.description', '[class*="job"][class*="description"]', '[class*="description"][class*="content"]', 'main', 'article'];
-      
-      let bestText = '';
-      let bestHtml = '';
-      let maxLength = 0;
-      
-      for (const selector of selectors) {
-        try {
-          const elements = document.querySelectorAll(selector);
-          for (const element of elements) {
-            const text = element.innerText || element.textContent || '';
-            if (text.length > maxLength && text.length > 100) {
-              maxLength = text.length;
-              bestText = text;
-              bestHtml = element.outerHTML;
-            }
-          }
-        } catch (e) {}
+  const downloadExtensionFiles = async () => {
+    try {
+      const response = await fetch('/api/download-extension');
+      if (!response.ok) {
+        throw new Error('Failed to download extension files');
       }
       
-      if (!bestText || bestText.length < 200) {
-        bestText = document.body.innerText || document.body.textContent || '';
-        bestHtml = document.documentElement.outerHTML;
-      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'job-tracker-browser-extension.zip';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
       
-      return { text: bestText.replace(/\\s+/g, ' ').trim(), html: bestHtml };
+      toast({
+        title: "Download Started!",
+        description: "Extension files are being downloaded",
+      });
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: "Failed to download extension files",
+        variant: "destructive",
+      });
     }
-    
-    async function captureJob() {
-      const captureBtn = document.getElementById('capture-btn');
-      captureBtn.textContent = 'Capturing...';
-      captureBtn.disabled = true;
-      
-      try {
-        const { text, html } = extractJobDescription();
-        
-        if (!text || text.length < 100) {
-          throw new Error('Could not find job description text on this page');
-        }
-        
-        const response = await fetch(DESKTOP_APP_URL + '/api/browser-capture', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: text,
-            url: window.location.href,
-            html: html,
-            auth_token: AUTH_TOKEN
-          })
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || 'HTTP ' + response.status);
-        }
-        
-        const data = await response.json();
-        showStatus('✓ Job captured! UUID: ' + data.uuid.slice(0, 8) + '...', 'success');
-        
-        setTimeout(() => { overlay.remove(); }, 2000);
-        
-      } catch (error) {
-        showStatus('✗ Capture failed: ' + error.message, 'error');
-      } finally {
-        captureBtn.textContent = 'Capture Job Description';
-        captureBtn.disabled = false;
-      }
-    }
-    
-    document.getElementById('close-btn').onclick = () => overlay.remove();
-    document.getElementById('capture-btn').onclick = captureJob;
-    
-    overlay.onclick = (e) => e.stopPropagation();
-    document.onclick = () => overlay.remove();
-  })();`;
+  };
+
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
@@ -182,9 +117,9 @@ export default function BrowserHelperPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Option 1: Browser Extension (Recommended)</CardTitle>
+          <CardTitle>Browser Extension Setup</CardTitle>
           <CardDescription>
-            Install the browser extension for the best experience
+            Install the browser extension for seamless job description capture
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -193,7 +128,11 @@ export default function BrowserHelperPage() {
               1. Download the extension files and install them in your browser
             </p>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2"
+                onClick={downloadExtensionFiles}
+              >
                 <Download className="h-4 w-4" />
                 Download Extension Files
               </Button>
@@ -218,61 +157,6 @@ export default function BrowserHelperPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Option 2: Bookmarklet (Quick Setup)</CardTitle>
-          <CardDescription>
-            Create a bookmark that captures job descriptions with one click
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-3">
-            <p className="text-sm text-gray-600">
-              1. Copy the bookmarklet code below
-            </p>
-            <div className="relative">
-              <textarea
-                readOnly
-                value={bookmarkletCode}
-                className="w-full h-32 p-3 text-xs font-mono border rounded-md bg-gray-50"
-                placeholder={isLoading ? "Loading..." : "Bookmarklet code will appear here"}
-              />
-              <Button
-                onClick={() => copyToClipboard(bookmarkletCode, "Bookmarklet code")}
-                className="absolute top-2 right-2"
-                size="sm"
-                variant="outline"
-                disabled={!authToken}
-              >
-                <Copy className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <p className="text-sm text-gray-600">
-              2. Create a new bookmark in your browser:
-            </p>
-            <ul className="text-sm text-gray-600 space-y-1 ml-4 list-disc">
-              <li>Right-click your bookmarks bar and select "Add bookmark"</li>
-              <li>Name it "Capture Job Description"</li>
-              <li>Paste the code above as the URL</li>
-              <li>Save the bookmark</li>
-            </ul>
-          </div>
-
-          <div className="space-y-3">
-            <p className="text-sm text-gray-600">
-              3. Usage:
-            </p>
-            <ul className="text-sm text-gray-600 space-y-1 ml-4 list-disc">
-              <li>Navigate to any job posting page</li>
-              <li>Click the "Capture Job Description" bookmark</li>
-              <li>The job description will be automatically captured and saved</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
